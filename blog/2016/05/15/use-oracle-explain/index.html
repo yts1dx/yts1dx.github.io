@@ -9,7 +9,7 @@
   <meta name="author" content="Yan Tingshuai">
 
   
-  <meta name="description" content="生成explain SQL> explain plan into plan_table for select /+index(test testi) / * from t1; Explained. 查看含有outline的explain SQL> select * from table( &hellip;">
+  <meta name="description" content="生成explain SQL&gt; explain plan into plan_table for select /*+index(test testi) */ * from t1; Explained. 查看含有outline的explain SQL> select * from table( &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -89,13 +89,14 @@
 
 <div class="entry-content"><h2>生成explain</h2>
 
-<p>SQL> explain plan into plan_table for  select /<em>+index(test testi) </em>/ * from t1;</p>
+<pre><code>SQL&gt; explain plan into plan_table for  select /*+index(test testi) */ * from t1;
+</code></pre>
 
 <p>Explained.</p>
 
 <h2>查看含有outline的explain</h2>
 
-<p>SQL> select * from table(dbms_xplan.display(&lsquo;PLAN_TABLE&rsquo;,NULL,&lsquo;OUTLINE&rsquo;));</p>
+<blockquote><p>SQL> select * from table(dbms_xplan.display(&lsquo;PLAN_TABLE&rsquo;,NULL,&lsquo;OUTLINE&rsquo;));</p></blockquote>
 
 <h2>PLAN_TABLE_OUTPUT</h2>
 
