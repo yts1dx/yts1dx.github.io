@@ -140,45 +140,45 @@
 
 <h2>查看含有outline的explain</h2>
 
-<blockquote><p>SQL> select * from table(dbms_xplan.display(&lsquo;PLAN_TABLE&rsquo;,NULL,&lsquo;OUTLINE&rsquo;));</p></blockquote>
+<pre><code>SQL&gt; select * from table(dbms_xplan.display('PLAN_TABLE',NULL,'OUTLINE'));
 
-<h2>PLAN_TABLE_OUTPUT</h2>
+PLAN_TABLE_OUTPUT
+--------------------------------------------------------------------------------
+Plan hash value: 3617692013
 
-<p>Plan hash value: 3617692013</p>
+--------------------------------------------------------------------------
+| Id  | Operation     | Name | Rows  | Bytes | Cost (%CPU)| Time     |
+--------------------------------------------------------------------------
+|   0 | SELECT STATEMENT  |  |     1 |    13 |     2   (0)| 00:00:01 |
+|   1 |  TABLE ACCESS FULL| T1    |     1 |    13 |     2   (0)| 00:00:01 |
+--------------------------------------------------------------------------
 
-<hr />
+Outline Data
+-------------
 
-<h2>| Id  | Operation     | Name | Rows  | Bytes | Cost (%CPU)| Time     |</h2>
+PLAN_TABLE_OUTPUT
+--------------------------------------------------------------------------------
 
-<p>|   0 | SELECT STATEMENT  |  |     1 |    13 |     2   (0)| 00:00:01 |</p>
-
-<h2>|   1 |  TABLE ACCESS FULL| T1    |     1 |    13 |     2   (0)| 00:00:01 |</h2>
-
-<h2>Outline Data</h2>
-
-<h2>PLAN_TABLE_OUTPUT</h2>
-
-<p>  /<em>+
+  /*+
         BEGIN_OUTLINE_DATA
-    FULL(@&ldquo;SEL$1&rdquo; &ldquo;T1&rdquo;@&ldquo;SEL$1&rdquo;)
-    OUTLINE_LEAF(@&ldquo;SEL$1&rdquo;)
-    ALL_ROWS
-    DB_VERSION(&lsquo;11.2.0.2&rsquo;)
-    OPTIMIZER_FEATURES_ENABLE(&lsquo;11.2.0.2&rsquo;)
-    IGNORE_OPTIM_EMBEDDED_HINTS
-    END_OUTLINE_DATA
-   </em>/</p>
+        FULL(@"SEL$1" "T1"@"SEL$1")
+        OUTLINE_LEAF(@"SEL$1")
+        ALL_ROWS
+        DB_VERSION('11.2.0.2')
+        OPTIMIZER_FEATURES_ENABLE('11.2.0.2')
+        IGNORE_OPTIM_EMBEDDED_HINTS
+        END_OUTLINE_DATA
+   */
 
-<h2>PLAN_TABLE_OUTPUT</h2>
+PLAN_TABLE_OUTPUT
+--------------------------------------------------------------------------------
 
-<h2>Note</h2>
+Note
+-----
+   - dynamic sampling used for this statement (level=2)
 
-<ul>
-<li> dynamic sampling used for this statement (level=2)</li>
-</ul>
-
-
-<p>26 rows selected.</p>
+26 rows selected.
+</code></pre>
 </div>
   
   
