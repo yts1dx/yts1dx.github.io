@@ -4,7 +4,7 @@
   <title><![CDATA[Yan Tingshuai's Blog]]></title>
   <link href="http://yts1dx.github.io/atom.xml" rel="self"/>
   <link href="http://yts1dx.github.io/"/>
-  <updated>2016-05-15T20:35:22+08:00</updated>
+  <updated>2016-05-15T21:09:36+08:00</updated>
   <id>http://yts1dx.github.io/</id>
   <author>
     <name><![CDATA[Yan Tingshuai]]></name>
@@ -12,6 +12,27 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Pride and Prejudice]]></title>
+    <link href="http://yts1dx.github.io/blog/2016/05/15/ao-man-yu-pian-jian/"/>
+    <updated>2016-05-15T20:38:11+08:00</updated>
+    <id>http://yts1dx.github.io/blog/2016/05/15/ao-man-yu-pian-jian</id>
+    <content type="html"><![CDATA[<h1>简介</h1>
+
+<p>Pride and Prejudice(中文:傲慢与偏见)，是英国小说家简·奥斯丁的代表作，主要讲述了班纳特家两个姐妹的爱情故事，反映了19世纪英国乡绅阶层的生活、民俗、爱情等。</p>
+
+<h1>回味</h1>
+
+<h2>书名</h2>
+
+<p>刚开始阅读这部小说时，觉得这个书名很奇怪，通过书名无法体味到要表达怎样的一种情愫。但是随着阅读的深入，慢慢体会到这两个词贯穿了整个故事情节。“傲慢”毋庸置疑是对达西的评价，他是个富有的绅士，是一个大地主，是小说中描述的上层阶级，从小被教育要看不起除家里以外的任何人；但是，当爱情到来时，他察觉到了自己的傲慢，也用于放下自己的傲慢，哪怕是对哪些可能会影响其名誉的人仍旧如此。“偏见”指的是小说中的另一位主人公——伊丽莎白，她聪明伶俐，美丽大方，被所有人所喜爱，是的傲慢的达西一见钟情；然后，恰恰是她的“聪明”使他对很对事情有着自以为正确的偏见。当达西与伊丽莎白相遇后，这种傲慢与偏见的态度有都纷纷表现在对对方的态度上。好在故事的最后，主人公们为了爱情突破一道道屏障，最后走到了一起，从此过上了幸福快乐的生活。</p>
+
+<h2>现实生活中的傲慢与偏见</h2>
+
+<p>在阅读小说的过程中发现，日常中的我们不也是充满着傲慢与偏见吗？对于不如我们的人，我们是不是会存在着一种傲慢的心里对待他们，我想大多数的或多或少有一些的；对于做事风格与我们不符的人，我们又会不会对其有所偏见的，这个应该也是逃不过的。小说中，与达西和伊丽莎白产生明显对比的是另一对主人公：彬格莱和吉英。彬格莱先生性格温和、为人体贴；吉英美丽善良、温柔体贴、善解人意。生活中，如果能做到像他们一样，一定可以少许多的怨气，生活也会快乐些。世界上没有完美的人，许多我们所不喜欢的人往往都是由于自己的傲慢与偏见造成的，努力放弃这些，去捡拾每个人身上的优点，这样世界会更加美好。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Use Oracle Explain]]></title>
