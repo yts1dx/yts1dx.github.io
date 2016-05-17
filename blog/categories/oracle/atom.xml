@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Oracle | Yan Tingshuai's Blog]]></title>
   <link href="http://yts1dx.github.io/blog/categories/oracle/atom.xml" rel="self"/>
   <link href="http://yts1dx.github.io/"/>
-  <updated>2016-05-15T21:13:11+08:00</updated>
+  <updated>2016-05-17T21:35:28+08:00</updated>
   <id>http://yts1dx.github.io/</id>
   <author>
     <name><![CDATA[Yan Tingshuai]]></name>
@@ -21,9 +21,9 @@
     <content type="html"><![CDATA[<h2>生成explain</h2>
 
 <pre><code>SQL&gt; explain plan into plan_table for  select /*+index(test testi) */ * from t1;
-</code></pre>
 
-<p>Explained.</p>
+Explained.
+</code></pre>
 
 <h2>查看含有outline的explain</h2>
 
@@ -65,6 +65,183 @@ Note
    - dynamic sampling used for this statement (level=2)
 
 26 rows selected.
+</code></pre>
+
+<h2>index 的表现</h2>
+
+<pre><code>    SQL&gt; select * from table(dbms_xplan.display('plan_table',NULL,'OUTLINE'));
+
+    PLAN_TABLE_OUTPUT
+    --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    Plan hash value: 2965991605
+
+    ---------------------------------------------------------------------------------
+    | Id  | Operation    | Name     | Rows  | Bytes | Cost (%CPU)| Time |
+    ---------------------------------------------------------------------------------
+    |   0 | SELECT STATEMENT |      |     1 |    13 |     0   (0)| 00:00:01 |
+    |   1 |  INDEX FULL SCAN | SYS_C0011876 |     1 |    13 |     0   (0)| 00:00:01 |
+    ---------------------------------------------------------------------------------
+
+    Outline Data
+    -------------
+
+    PLAN_TABLE_OUTPUT
+    --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+      /*+
+          BEGIN_OUTLINE_DATA
+          INDEX(@"SEL$1" "T1"@"SEL$1" ("T1"."C1"))
+          OUTLINE_LEAF(@"SEL$1")
+          ALL_ROWS
+          DB_VERSION('11.2.0.2')
+          OPTIMIZER_FEATURES_ENABLE('11.2.0.2')
+          IGNORE_OPTIM_EMBEDDED_HINTS
+          END_OUTLINE_DATA
+      */
+
+    22 rows selected.
+</code></pre>
+
+<p>IOT表的表现
+    SQL> select * from     table(dbms_xplan.display(&lsquo;plan_table&rsquo;,NULL,&lsquo;OUTLINE&rsquo;));</p>
+
+<pre><code>    PLAN_TABLE_OUTPUT
+    --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    Plan hash value: 900014233
+
+    ------------------------------------------------------------------------------------------
+    | Id  | Operation        | Name      | Rows  | Bytes | Cost (%CPU)| Time     |
+    ------------------------------------------------------------------------------------------
+    |   0 | SELECT STATEMENT     |           |     1 |  1050 |   802   (0)| 00:00:10 |
+    |   1 |  INDEX FAST FULL SCAN| PK_ADMIN_DOCINDEX |     1 |  1050 |   802   (0)| 00:00:10 |
+    ------------------------------------------------------------------------------------------
+
+    Outline Data
+    -------------
+
+    PLAN_TABLE_OUTPUT
+    --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+      /*+
+          BEGIN_OUTLINE_DATA
+          INDEX_FFS(@"SEL$1" "ADMIN_DOCINDEX"@"SEL$1" ("ADMIN_DOCINDEX"."TOKEN"
+              "ADMIN_DOCINDEX"."DOC_ID"))
+          OUTLINE_LEAF(@"SEL$1")
+          ALL_ROWS
+          DB_VERSION('11.2.0.2')
+          OPTIMIZER_FEATURES_ENABLE('11.2.0.2')
+          IGNORE_OPTIM_EMBEDDED_HINTS
+          END_OUTLINE_DATA
+
+    PLAN_TABLE_OUTPUT
+    --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      */
+
+    Note
+    -----
+       - dynamic sampling used for this statement (level=2)
+
+    27 rows selected.
+</code></pre>
+
+<h2>涉及到rewrite时，hint中的qb_name</h2>
+
+<pre><code>    SQL&gt; select * from table(dbms_xplan.display('plan_table',NULL,'OUTLINE'));
+
+    PLAN_TABLE_OUTPUT
+    --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    Plan hash value: 1463220175
+
+    -------------------------------------------------------------------------------------
+    | Id  | Operation        | Name     | Rows  | Bytes | Cost (%CPU)| Time     |
+    -------------------------------------------------------------------------------------
+    |   0 | SELECT STATEMENT     |          |     1 |    13 |     0   (0)| 00:00:01 |
+    |   1 |  MERGE JOIN CARTESIAN|          |     1 |    13 |     0   (0)| 00:00:01 |
+    |   2 |   INDEX FULL SCAN    | SYS_C0011876 |     1 |    13 |     0   (0)| 00:00:01 |
+    |   3 |   BUFFER SORT        |          |     1 |       |     0   (0)| 00:00:01 |
+    |   4 |    INDEX FULL SCAN   | SYS_C0011877 |     1 |       |     0   (0)| 00:00:01 |
+    -------------------------------------------------------------------------------------
+
+    PLAN_TABLE_OUTPUT
+    --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    Outline Data
+    -------------
+
+      /*+
+          BEGIN_OUTLINE_DATA
+          USE_MERGE_CARTESIAN(@"SEL$F5BB74E1" "T2"@"SEL$2")
+          LEADING(@"SEL$F5BB74E1" "T1"@"SEL$2" "T2"@"SEL$2")
+          INDEX(@"SEL$F5BB74E1" "T2"@"SEL$2" ("T2"."C2"))
+          INDEX(@"SEL$F5BB74E1" "T1"@"SEL$2" ("T1"."C1"))
+          OUTLINE(@"SEL$2")
+
+    PLAN_TABLE_OUTPUT
+    --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+          OUTLINE(@"SEL$1")
+          MERGE(@"SEL$2")
+          OUTLINE_LEAF(@"SEL$F5BB74E1")
+          ALL_ROWS
+          DB_VERSION('11.2.0.2')
+          OPTIMIZER_FEATURES_ENABLE('11.2.0.2')
+          IGNORE_OPTIM_EMBEDDED_HINTS
+          END_OUTLINE_DATA
+      */
+
+    31 rows selected.
+</code></pre>
+
+<h2>多表join的情况</h2>
+
+<pre><code class="sql">SQL&gt; explain plan into plan_table for select * from t1,t2,t3;
+
+Explained.
+
+SQL&gt; select * from table(dbms_xplan.display('plan_table',NULL,'OUTLINE'));
+
+PLAN_TABLE_OUTPUT
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 457197764
+
+--------------------------------------------------------------------------------------
+| Id  | Operation         | Name         | Rows  | Bytes | Cost (%CPU)| Time     |
+--------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT      |          |     1 |    39 |     2   (0)| 00:00:01 |
+|   1 |  MERGE JOIN CARTESIAN |          |     1 |    39 |     2   (0)| 00:00:01 |
+|   2 |   MERGE JOIN CARTESIAN|          |     1 |    26 |     0   (0)| 00:00:01 |
+|   3 |    INDEX FULL SCAN    | SYS_C0011876 |     1 |    13 |     0   (0)| 00:00:01 |
+|   4 |    BUFFER SORT        |          |     1 |    13 |     0   (0)| 00:00:01 |
+|   5 |     INDEX FULL SCAN   | SYS_C0011877 |     1 |    13 |     0   (0)| 00:00:01 |
+
+PLAN_TABLE_OUTPUT
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+|   6 |   BUFFER SORT         |          |     1 |    13 |     2   (0)| 00:00:01 |
+|   7 |    TABLE ACCESS FULL  | T3       |     1 |    13 |     2   (0)| 00:00:01 |
+--------------------------------------------------------------------------------------
+
+Outline Data
+-------------
+
+  /*+
+      BEGIN_OUTLINE_DATA
+      USE_MERGE_CARTESIAN(@"SEL$1" "T3"@"SEL$1")
+      USE_MERGE_CARTESIAN(@"SEL$1" "T2"@"SEL$1")
+
+PLAN_TABLE_OUTPUT
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      LEADING(@"SEL$1" "T1"@"SEL$1" "T2"@"SEL$1" "T3"@"SEL$1")
+      FULL(@"SEL$1" "T3"@"SEL$1")
+      INDEX(@"SEL$1" "T2"@"SEL$1" ("T2"."C2"))
+      INDEX(@"SEL$1" "T1"@"SEL$1" ("T1"."C1"))
+      OUTLINE_LEAF(@"SEL$1")
+      ALL_ROWS
+      DB_VERSION('11.2.0.2')
+      OPTIMIZER_FEATURES_ENABLE('11.2.0.2')
+      IGNORE_OPTIM_EMBEDDED_HINTS
+      END_OUTLINE_DATA
+  */
+
+33 rows selected.
 </code></pre>
 ]]></content>
   </entry>
