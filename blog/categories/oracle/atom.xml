@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Oracle | Yan Tingshuai's Blog]]></title>
   <link href="http://yts1dx.github.io/blog/categories/oracle/atom.xml" rel="self"/>
   <link href="http://yts1dx.github.io/"/>
-  <updated>2016-05-17T21:35:28+08:00</updated>
+  <updated>2016-05-22T23:02:20+08:00</updated>
   <id>http://yts1dx.github.io/</id>
   <author>
     <name><![CDATA[Yan Tingshuai]]></name>
@@ -242,6 +242,178 @@ PLAN_TABLE_OUTPUT
   */
 
 33 rows selected.
+</code></pre>
+
+<h2>join含有view的情况</h2>
+
+<pre><code>SQL&gt; explain plan into plan_table for select * from  t1, (select max(c2) from t2)  tt;
+
+Explained.
+
+SQL&gt; select * from table(dbms_xplan.display('plan_table',NULL,'outline'));
+
+PLAN_TABLE_OUTPUT
+----------------------------------------------------------------------------------------------------
+Plan hash value: 3649077807
+
+----------------------------------------------------------------------------------------------
+| Id  | Operation             | Name         | Rows  | Bytes | Cost (%CPU)| Time     |
+----------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT          |          |     1 |    26 |     1   (0)| 00:00:01 |
+|   1 |  MERGE JOIN CARTESIAN         |          |     1 |    26 |     1   (0)| 00:00:01 |
+|   2 |   INDEX FULL SCAN         | SYS_C0011876 |     1 |    13 |     0   (0)| 00:00:01 |
+|   3 |   BUFFER SORT             |          |     1 |    13 |     1   (0)| 00:00:01 |
+|   4 |    VIEW               |          |     1 |    13 |     1   (0)| 00:00:01 |
+|   5 |     SORT AGGREGATE        |          |     1 |    13 |        |      |
+
+PLAN_TABLE_OUTPUT
+----------------------------------------------------------------------------------------------------
+|   6 |      INDEX FULL SCAN (MIN/MAX)| SYS_C0011877 |     1 |    13 |     1   (0)| 00:00:01 |
+----------------------------------------------------------------------------------------------
+
+Outline Data
+-------------
+
+  /*+
+      BEGIN_OUTLINE_DATA
+      INDEX(@"SEL$2" "T2"@"SEL$2" ("T2"."C2"))
+      USE_MERGE_CARTESIAN(@"SEL$1" "TT"@"SEL$1")
+      LEADING(@"SEL$1" "T1"@"SEL$1" "TT"@"SEL$1")
+
+PLAN_TABLE_OUTPUT
+----------------------------------------------------------------------------------------------------
+      NO_ACCESS(@"SEL$1" "TT"@"SEL$1")
+      INDEX(@"SEL$1" "T1"@"SEL$1" ("T1"."C1"))
+      OUTLINE_LEAF(@"SEL$1")
+      OUTLINE_LEAF(@"SEL$2")
+      ALL_ROWS
+      DB_VERSION('11.2.0.2')
+      OPTIMIZER_FEATURES_ENABLE('11.2.0.2')
+      IGNORE_OPTIM_EMBEDDED_HINTS
+      END_OUTLINE_DATA
+  */
+
+32 rows selected.
+</code></pre>
+
+<h2>busy tree</h2>
+
+<pre><code class="sql">SQL&gt; explain plan into plan_table for select */*+leading(tt, t1,t2) use_nl(t1) use_nl(t2)*/ from (select /*+NO_MERGE*/* from t3,t4) tt, t1,t2;
+
+Explained.
+
+SQL&gt; select * from table(dbms_xplan.display('plan_table',NULL,'outline'));
+
+PLAN_TABLE_OUTPUT
+----------------------------------------------------------------------------------------------------
+Plan hash value: 276994482
+
+--------------------------------------------------------------------------------
+| Id  | Operation       | Name | Rows  | Bytes | Cost (%CPU)| Time     |
+--------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT    |      |     1 |    52 |     8   (0)| 00:00:01 |
+|   1 |  MERGE JOIN CARTESIAN   |      |     1 |    52 |     8   (0)| 00:00:01 |
+|   2 |   MERGE JOIN CARTESIAN  |      |     1 |    26 |     4   (0)| 00:00:01 |
+|   3 |    TABLE ACCESS FULL    | T1   |     1 |    13 |     2   (0)| 00:00:01 |
+|   4 |    BUFFER SORT      |      |     1 |    13 |     2   (0)| 00:00:01 |
+|   5 |     TABLE ACCESS FULL   | T2   |     1 |    13 |     2   (0)| 00:00:01 |
+
+PLAN_TABLE_OUTPUT
+----------------------------------------------------------------------------------------------------
+|   6 |   BUFFER SORT       |      |     1 |    26 |     6   (0)| 00:00:01 |
+|   7 |    VIEW         |      |     1 |    26 |     4   (0)| 00:00:01 |
+|   8 |     MERGE JOIN CARTESIAN|      |     1 |    26 |     4   (0)| 00:00:01 |
+|   9 |      TABLE ACCESS FULL  | T3   |     1 |    13 |     2   (0)| 00:00:01 |
+|  10 |      BUFFER SORT    |      |     1 |    13 |     2   (0)| 00:00:01 |
+|  11 |       TABLE ACCESS FULL | T4   |     1 |    13 |     2   (0)| 00:00:01 |
+--------------------------------------------------------------------------------
+
+Outline Data
+-------------
+
+
+PLAN_TABLE_OUTPUT
+----------------------------------------------------------------------------------------------------
+  /*+
+      BEGIN_OUTLINE_DATA
+      USE_MERGE_CARTESIAN(@"SEL$2" "T4"@"SEL$2")
+      LEADING(@"SEL$2" "T3"@"SEL$2" "T4"@"SEL$2")
+      FULL(@"SEL$2" "T4"@"SEL$2")
+      FULL(@"SEL$2" "T3"@"SEL$2")
+      USE_MERGE_CARTESIAN(@"SEL$1" "TT"@"SEL$1")
+      USE_MERGE_CARTESIAN(@"SEL$1" "T2"@"SEL$1")
+      LEADING(@"SEL$1" "T1"@"SEL$1" "T2"@"SEL$1" "TT"@"SEL$1")
+      NO_ACCESS(@"SEL$1" "TT"@"SEL$1")
+      FULL(@"SEL$1" "T2"@"SEL$1")
+
+PLAN_TABLE_OUTPUT
+----------------------------------------------------------------------------------------------------
+      FULL(@"SEL$1" "T1"@"SEL$1")
+      OUTLINE_LEAF(@"SEL$1")
+      OUTLINE_LEAF(@"SEL$2")
+      ALL_ROWS
+      DB_VERSION('11.2.0.2')
+      OPTIMIZER_FEATURES_ENABLE('11.2.0.2')
+      IGNORE_OPTIM_EMBEDDED_HINTS
+      END_OUTLINE_DATA
+  */
+
+Note
+
+PLAN_TABLE_OUTPUT
+----------------------------------------------------------------------------------------------------
+-----
+   - dynamic sampling used for this statement (level=2)
+
+46 rows selected.
+</code></pre>
+
+<h2>指定ordered hint的情况</h2>
+
+<pre><code class="sql">SQL&gt; explain plan into plan_table for select /*+ordered*/ * from t1,t2;
+
+Explained.
+
+SQL&gt; SELECT PLAN_TABLE_OUTPUT FROM TABLE(DBMS_XPLAN.DISPLAY(NULL, NULL, 'outline'));
+
+PLAN_TABLE_OUTPUT
+--------------------------------------------------------------------------------
+Plan hash value: 787647388
+
+-----------------------------------------------------------------------------
+| Id  | Operation        | Name | Rows  | Bytes | Cost (%CPU)| Time     |
+-----------------------------------------------------------------------------
+|   0 | SELECT STATEMENT     |      |     1 |    26 |     4   (0)| 00:00:01 |
+|   1 |  MERGE JOIN CARTESIAN|      |     1 |    26 |     4   (0)| 00:00:01 |
+|   2 |   TABLE ACCESS FULL  | T1   |     1 |    13 |     2   (0)| 00:00:01 |
+|   3 |   BUFFER SORT        |      |     1 |    13 |     2   (0)| 00:00:01 |
+|   4 |    TABLE ACCESS FULL | T2   |     1 |    13 |     2   (0)| 00:00:01 |
+-----------------------------------------------------------------------------
+
+PLAN_TABLE_OUTPUT
+--------------------------------------------------------------------------------
+
+Outline Data
+-------------
+
+  /*+
+      BEGIN_OUTLINE_DATA
+      USE_MERGE_CARTESIAN(@"SEL$1" "T2"@"SEL$1")
+      LEADING(@"SEL$1" "T1"@"SEL$1" "T2"@"SEL$1")
+      FULL(@"SEL$1" "T2"@"SEL$1")
+      FULL(@"SEL$1" "T1"@"SEL$1")
+      OUTLINE_LEAF(@"SEL$1")
+
+PLAN_TABLE_OUTPUT
+--------------------------------------------------------------------------------
+      ALL_ROWS
+      DB_VERSION('11.2.0.2')
+      OPTIMIZER_FEATURES_ENABLE('11.2.0.2')
+      IGNORE_OPTIM_EMBEDDED_HINTS
+      END_OUTLINE_DATA
+  */
+
+28 rows selected.
 </code></pre>
 ]]></content>
   </entry>
