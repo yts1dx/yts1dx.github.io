@@ -4,7 +4,7 @@
   <title><![CDATA[Yan Tingshuai's Blog]]></title>
   <link href="http://yts1dx.github.io/atom.xml" rel="self"/>
   <link href="http://yts1dx.github.io/"/>
-  <updated>2016-05-29T22:56:07+08:00</updated>
+  <updated>2016-05-29T23:01:53+08:00</updated>
   <id>http://yts1dx.github.io/</id>
   <author>
     <name><![CDATA[Yan Tingshuai]]></name>
@@ -14,14 +14,25 @@
 
   
   <entry>
+    <title type="html"><![CDATA[正则表达式]]></title>
+    <link href="http://yts1dx.github.io/blog/2016/05/29/zheng-ze-biao-da-shi/"/>
+    <updated>2016-05-29T22:58:24+08:00</updated>
+    <id>http://yts1dx.github.io/blog/2016/05/29/zheng-ze-biao-da-shi</id>
+    <content type="html"><![CDATA[<p>匹配行头：^
+匹配行尾：$</p>
+]]></content>
+  </entry>
+  
+  <entry>
     <title type="html"><![CDATA[Emacs常用命令]]></title>
     <link href="http://yts1dx.github.io/blog/2016/05/29/emacschang-yong-ming-ling/"/>
     <updated>2016-05-29T21:52:31+08:00</updated>
     <id>http://yts1dx.github.io/blog/2016/05/29/emacschang-yong-ming-ling</id>
     <content type="html"><![CDATA[<h1>搜索与查找</h1>
 
-<p>正则查找：C-M-s C-M-r
-普通查找：C-S C-r</p>
+<p>正则查找：C-M-s C-M-r</p>
+
+<p>普通查找：C-S C-r</p>
 ]]></content>
   </entry>
   

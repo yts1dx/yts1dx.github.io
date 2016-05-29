@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Script | Yan Tingshuai's Blog]]></title>
+  <link href="http://yts1dx.github.io/blog/categories/script/atom.xml" rel="self"/>
+  <link href="http://yts1dx.github.io/"/>
+  <updated>2016-05-29T23:01:53+08:00</updated>
+  <id>http://yts1dx.github.io/</id>
+  <author>
+    <name><![CDATA[Yan Tingshuai]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[正则表达式]]></title>
+    <link href="http://yts1dx.github.io/blog/2016/05/29/zheng-ze-biao-da-shi/"/>
+    <updated>2016-05-29T22:58:24+08:00</updated>
+    <id>http://yts1dx.github.io/blog/2016/05/29/zheng-ze-biao-da-shi</id>
+    <content type="html"><![CDATA[<p>匹配行头：^
+匹配行尾：$</p>
+]]></content>
+  </entry>
+  
+</feed>
