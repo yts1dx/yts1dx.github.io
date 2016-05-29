@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Emacs | Yan Tingshuai's Blog]]></title>
+  <link href="http://yts1dx.github.io/blog/categories/emacs/atom.xml" rel="self"/>
+  <link href="http://yts1dx.github.io/"/>
+  <updated>2016-05-29T21:55:51+08:00</updated>
+  <id>http://yts1dx.github.io/</id>
+  <author>
+    <name><![CDATA[Yan Tingshuai]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Emacs常用命令]]></title>
+    <link href="http://yts1dx.github.io/blog/2016/05/29/emacschang-yong-ming-ling/"/>
+    <updated>2016-05-29T21:52:31+08:00</updated>
+    <id>http://yts1dx.github.io/blog/2016/05/29/emacschang-yong-ming-ling</id>
+    <content type="html"><![CDATA[<h1>搜索与查找</h1>
+
+<p>正则查找：C-M-s C-M-r
+普通查找：C-S C-r</p>
+]]></content>
+  </entry>
+  
+</feed>

@@ -9,7 +9,9 @@
   <meta name="author" content="Yan Tingshuai">
 
   
-  <meta name="description" content="简介 Pride and Prejudice(中文:傲慢与偏见)，是英国小说家简·奥斯丁的代表作，主要讲述了班纳特家两个姐妹的爱情故事，反映了19世纪英国乡绅阶层的生活、民俗、爱情等。 回味 书名 刚开始阅读这部小说时，觉得这个书名很奇怪，通过书名无法体味到要表达怎样的一种情愫。但是随着阅读的深入 &hellip;">
+  <meta name="description" content="搜索与查找 正则查找：C-M-s C-M-r
+普通查找：C-S C-r
+">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -68,6 +70,38 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/05/29/emacschang-yong-ming-ling/">Emacs常用命令</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-05-29T21:52:31+08:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>29</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>9:52 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h1>搜索与查找</h1>
+
+<p>正则查找：C-M-s C-M-r
+普通查找：C-S C-r</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -742,6 +776,99 @@ Note
 </span></code></pre></td></tr></table></div></figure>
 
 
+<h2>update outline输出</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">explain</span> <span class="n">plan</span> <span class="k">into</span> <span class="n">plan_table</span> <span class="k">for</span> <span class="k">update</span>  <span class="n">t1</span> <span class="k">set</span> <span class="n">c1</span><span class="o">=</span> <span class="mi">100</span> <span class="k">where</span> <span class="n">c1</span><span class="o">=</span><span class="mi">1</span> <span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Explained</span><span class="p">.</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="k">table</span><span class="p">(</span><span class="n">dbms_xplan</span><span class="p">.</span><span class="n">display</span><span class="p">(</span><span class="s1">&#39;PLAN_TABLE&#39;</span><span class="p">,</span><span class="k">NULL</span><span class="p">,</span><span class="s1">&#39;OUTLINE&#39;</span><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">PLAN_TABLE_OUTPUT</span>
+</span><span class='line'><span class="c1">--------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="n">Plan</span> <span class="n">hash</span> <span class="n">value</span><span class="p">:</span> <span class="mi">2927627013</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">---------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span> <span class="n">Id</span>  <span class="o">|</span> <span class="k">Operation</span>    <span class="o">|</span> <span class="n">Name</span> <span class="o">|</span> <span class="k">Rows</span>  <span class="o">|</span> <span class="n">Bytes</span> <span class="o">|</span> <span class="n">Cost</span> <span class="p">(</span><span class="o">%</span><span class="n">CPU</span><span class="p">)</span><span class="o">|</span> <span class="n">Time</span>   <span class="o">|</span>
+</span><span class='line'><span class="c1">---------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">0</span> <span class="o">|</span> <span class="k">UPDATE</span> <span class="k">STATEMENT</span>   <span class="o">|</span>     <span class="o">|</span>  <span class="mi">1</span> <span class="o">|</span>    <span class="mi">13</span> <span class="o">|</span>   <span class="mi">2</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">1</span> <span class="o">|</span>  <span class="k">UPDATE</span>     <span class="o">|</span> <span class="n">T1</span>   <span class="o">|</span>      <span class="o">|</span>    <span class="o">|</span>         <span class="o">|</span>   <span class="o">|</span>
+</span><span class='line'><span class="o">|*</span>  <span class="mi">2</span> <span class="o">|</span>   <span class="k">TABLE</span> <span class="k">ACCESS</span> <span class="k">FULL</span><span class="o">|</span> <span class="n">T1</span>   <span class="o">|</span>   <span class="mi">1</span> <span class="o">|</span>    <span class="mi">13</span> <span class="o">|</span>   <span class="mi">2</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="c1">---------------------------------------------------------------------------</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Outline</span> <span class="k">Data</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">PLAN_TABLE_OUTPUT</span>
+</span><span class='line'><span class="c1">--------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="c1">-------------</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/*+</span>
+</span><span class='line'><span class="cm">      BEGIN_OUTLINE_DATA</span>
+</span><span class='line'><span class="cm">      FULL(@&quot;UPD$1&quot; &quot;T1&quot;@&quot;UPD$1&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE_LEAF(@&quot;UPD$1&quot;)</span>
+</span><span class='line'><span class="cm">      ALL_ROWS</span>
+</span><span class='line'><span class="cm">      DB_VERSION(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      OPTIMIZER_FEATURES_ENABLE(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      IGNORE_OPTIM_EMBEDDED_HINTS</span>
+</span><span class='line'><span class="cm">      END_OUTLINE_DATA</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">PLAN_TABLE_OUTPUT</span>
+</span><span class='line'><span class="cm">--------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="cm">  */</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Predicate</span> <span class="n">Information</span> <span class="p">(</span><span class="n">identified</span> <span class="k">by</span> <span class="k">operation</span> <span class="n">id</span><span class="p">):</span>
+</span><span class='line'><span class="c1">---------------------------------------------------</span>
+</span><span class='line'>
+</span><span class='line'>   <span class="mi">2</span> <span class="o">-</span> <span class="n">filter</span><span class="p">(</span><span class="ss">&quot;C1&quot;</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="mi">28</span> <span class="k">rows</span> <span class="n">selected</span><span class="p">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
 
 </div>
   
@@ -790,6 +917,10 @@ Note
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/05/29/emacschang-yong-ming-ling/">Emacs常用命令</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2016/05/15/ao-man-yu-pian-jian/">Pride and Prejudice</a>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Oracle | Yan Tingshuai's Blog]]></title>
   <link href="http://yts1dx.github.io/blog/categories/oracle/atom.xml" rel="self"/>
   <link href="http://yts1dx.github.io/"/>
-  <updated>2016-05-22T23:02:20+08:00</updated>
+  <updated>2016-05-29T21:55:51+08:00</updated>
   <id>http://yts1dx.github.io/</id>
   <author>
     <name><![CDATA[Yan Tingshuai]]></name>
@@ -412,6 +412,54 @@ PLAN_TABLE_OUTPUT
       IGNORE_OPTIM_EMBEDDED_HINTS
       END_OUTLINE_DATA
   */
+
+28 rows selected.
+</code></pre>
+
+<h2>update outline输出</h2>
+
+<pre><code class="sql">SQL&gt; explain plan into plan_table for update  t1 set c1= 100 where c1=1 ;
+
+Explained.
+
+SQL&gt; select * from table(dbms_xplan.display('PLAN_TABLE',NULL,'OUTLINE'));
+
+PLAN_TABLE_OUTPUT
+--------------------------------------------------------------------------------
+Plan hash value: 2927627013
+
+---------------------------------------------------------------------------
+| Id  | Operation      | Name | Rows  | Bytes | Cost (%CPU)| Time     |
+---------------------------------------------------------------------------
+|   0 | UPDATE STATEMENT   |      | 1 |    13 | 2   (0)| 00:00:01 |
+|   1 |  UPDATE        | T1   |   |   |        |      |
+|*  2 |   TABLE ACCESS FULL| T1   | 1 |    13 | 2   (0)| 00:00:01 |
+---------------------------------------------------------------------------
+
+Outline Data
+
+PLAN_TABLE_OUTPUT
+--------------------------------------------------------------------------------
+-------------
+
+  /*+
+      BEGIN_OUTLINE_DATA
+      FULL(@"UPD$1" "T1"@"UPD$1")
+      OUTLINE_LEAF(@"UPD$1")
+      ALL_ROWS
+      DB_VERSION('11.2.0.2')
+      OPTIMIZER_FEATURES_ENABLE('11.2.0.2')
+      IGNORE_OPTIM_EMBEDDED_HINTS
+      END_OUTLINE_DATA
+
+PLAN_TABLE_OUTPUT
+--------------------------------------------------------------------------------
+  */
+
+Predicate Information (identified by operation id):
+---------------------------------------------------
+
+   2 - filter("C1"=1)
 
 28 rows selected.
 </code></pre>
