@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Oracle | Yan Tingshuai's Blog]]></title>
   <link href="http://yts1dx.github.io/blog/categories/oracle/atom.xml" rel="self"/>
   <link href="http://yts1dx.github.io/"/>
-  <updated>2016-05-29T23:01:53+08:00</updated>
+  <updated>2016-06-06T19:54:21+08:00</updated>
   <id>http://yts1dx.github.io/</id>
   <author>
     <name><![CDATA[Yan Tingshuai]]></name>
@@ -462,6 +462,71 @@ Predicate Information (identified by operation id):
    2 - filter("C1"=1)
 
 28 rows selected.
+</code></pre>
+
+<h2>Oracle对于USE_HASH_AGGREGATION和NO_USE_HASH_AGGREGATION的使用</h2>
+
+<pre><code class="sql">SQL&gt; select name , version from v$sql_hint where class like '%HASH%';
+
+NAME                                 VERSION
+---------------------------------------------------------------- -------------------------
+USE_HASH_AGGREGATION                         10.2.0.1
+NO_USE_HASH_AGGREGATION                      10.2.0.1
+NO_USE_HASH                          10.1.0.3
+USE_HASH_GBY_FOR_PUSHDOWN                    11.2.0.2
+NO_USE_HASH_GBY_FOR_PUSHDOWN                     11.2.0.2
+</code></pre>
+
+<p>使用USE_HASH_AGGREGATION,看能否生效。</p>
+
+<pre><code class="sql">SQL&gt; explain plan into plan_table for select /*+ USE_HASH_AGGREGATION(@SEL$1)*/max(c1) from t1 group by c1;
+
+Explained.
+
+SQL&gt; select * from table(dbms_xplan.display('plan_table',NULL,'OUTLINE'));
+
+PLAN_TABLE_OUTPUT
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 274432217
+
+---------------------------------------------------------------------------------
+| Id  | Operation    | Name     | Rows  | Bytes | Cost (%CPU)| Time |
+---------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT |      |     1 |    13 |     0   (0)| 00:00:01 |
+|   1 |  HASH GROUP BY   |      |     1 |    13 |     0   (0)| 00:00:01 |
+|   2 |   INDEX FULL SCAN| SYS_C0012306 |     1 |    13 |     0   (0)| 00:00:01 |
+---------------------------------------------------------------------------------
+
+Outline Data
+-------------
+
+  /*+
+      BEGIN_OUTLINE_DATA
+      USE_HASH_AGGREGATION(@"SEL$1")
+      INDEX(@"SEL$1" "T1"@"SEL$1" ("T1"."C1"))
+      OUTLINE_LEAF(@"SEL$1")
+      ALL_ROWS
+      DB_VERSION('11.2.0.2')
+      OPTIMIZER_FEATURES_ENABLE('11.2.0.2')
+      IGNORE_OPTIM_EMBEDDED_HINTS
+      END_OUTLINE_DATA
+  */
+
+24 rows selected.
+</code></pre>
+
+<p>可见，成功使用该HINT。 oracle的当前版本如下。</p>
+
+<pre><code class="sql">
+SQL&gt; select * from v$version;
+
+BANNER
+--------------------------------------------------------------------------------
+Oracle Database 11g Enterprise Edition Release 11.2.0.2.0 - 64bit Production
+PL/SQL Release 11.2.0.2.0 - Production
+CORE    11.2.0.2.0  Production
+TNS for Linux: Version 11.2.0.2.0 - Production
+NLSRTL Version 11.2.0.2.0 - Production
 </code></pre>
 ]]></content>
   </entry>

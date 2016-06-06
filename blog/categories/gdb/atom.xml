@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Gdb | Yan Tingshuai's Blog]]></title>
+  <link href="http://yts1dx.github.io/blog/categories/gdb/atom.xml" rel="self"/>
+  <link href="http://yts1dx.github.io/"/>
+  <updated>2016-06-06T19:54:21+08:00</updated>
+  <id>http://yts1dx.github.io/</id>
+  <author>
+    <name><![CDATA[Yan Tingshuai]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[GDB常用命令]]></title>
+    <link href="http://yts1dx.github.io/blog/2016/06/04/gdbchang-yong-ming-ling/"/>
+    <updated>2016-06-04T19:32:28+08:00</updated>
+    <id>http://yts1dx.github.io/blog/2016/06/04/gdbchang-yong-ming-ling</id>
+    <content type="html"><![CDATA[<h1>GDB输出相关</h1>
+
+<h2>打印格式指定</h2>
+
+<blockquote><p>print / \&lt;f> \&lt;expr></p></blockquote>
+
+<h2>输出基类执行绑定的动态类型</h2>
+
+<blockquote><p>set print object on
+p ptr</p></blockquote>
+
+<h2>输出内存形式</h2>
+
+<blockquote><p>x / nfu addr</p></blockquote>
+
+<h2>以数组形式打印内存</h2>
+
+<blockquote><p>p *array@len
+p/x (short[2])0x12345678</p></blockquote>
+]]></content>
+  </entry>
+  
+</feed>

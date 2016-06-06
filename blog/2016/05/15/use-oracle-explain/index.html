@@ -791,6 +791,125 @@ Note
 </span></code></pre></td></tr></table></div></figure>
 
 
+<h2>Oracle对于USE_HASH_AGGREGATION和NO_USE_HASH_AGGREGATION的使用</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">name</span> <span class="p">,</span> <span class="k">version</span> <span class="k">from</span> <span class="n">v</span><span class="err">$</span><span class="n">sql_hint</span> <span class="k">where</span> <span class="k">class</span> <span class="k">like</span> <span class="s1">&#39;%HASH%&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">NAME</span>                                <span class="k">VERSION</span>
+</span><span class='line'><span class="c1">---------------------------------------------------------------- -------------------------</span>
+</span><span class='line'><span class="n">USE_HASH_AGGREGATION</span>                        <span class="mi">10</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">1</span>
+</span><span class='line'><span class="n">NO_USE_HASH_AGGREGATION</span>                     <span class="mi">10</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">1</span>
+</span><span class='line'><span class="n">NO_USE_HASH</span>                             <span class="mi">10</span><span class="p">.</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">3</span>
+</span><span class='line'><span class="n">USE_HASH_GBY_FOR_PUSHDOWN</span>                   <span class="mi">11</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span>
+</span><span class='line'><span class="n">NO_USE_HASH_GBY_FOR_PUSHDOWN</span>                    <span class="mi">11</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>使用USE_HASH_AGGREGATION,看能否生效。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">explain</span> <span class="n">plan</span> <span class="k">into</span> <span class="n">plan_table</span> <span class="k">for</span> <span class="k">select</span> <span class="cm">/*+ USE_HASH_AGGREGATION(@SEL$1)*/</span><span class="k">max</span><span class="p">(</span><span class="n">c1</span><span class="p">)</span> <span class="k">from</span> <span class="n">t1</span> <span class="k">group</span> <span class="k">by</span> <span class="n">c1</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Explained</span><span class="p">.</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="k">table</span><span class="p">(</span><span class="n">dbms_xplan</span><span class="p">.</span><span class="n">display</span><span class="p">(</span><span class="s1">&#39;plan_table&#39;</span><span class="p">,</span><span class="k">NULL</span><span class="p">,</span><span class="s1">&#39;OUTLINE&#39;</span><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">PLAN_TABLE_OUTPUT</span>
+</span><span class='line'><span class="c1">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="n">Plan</span> <span class="n">hash</span> <span class="n">value</span><span class="p">:</span> <span class="mi">274432217</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">---------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span> <span class="n">Id</span>  <span class="o">|</span> <span class="k">Operation</span>  <span class="o">|</span> <span class="n">Name</span>   <span class="o">|</span> <span class="k">Rows</span>    <span class="o">|</span> <span class="n">Bytes</span> <span class="o">|</span> <span class="n">Cost</span> <span class="p">(</span><span class="o">%</span><span class="n">CPU</span><span class="p">)</span><span class="o">|</span> <span class="n">Time</span>   <span class="o">|</span>
+</span><span class='line'><span class="c1">---------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">0</span> <span class="o">|</span> <span class="k">SELECT</span> <span class="k">STATEMENT</span> <span class="o">|</span>     <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">13</span> <span class="o">|</span>     <span class="mi">0</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">1</span> <span class="o">|</span>  <span class="n">HASH</span> <span class="k">GROUP</span> <span class="k">BY</span>  <span class="o">|</span>       <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">13</span> <span class="o">|</span>     <span class="mi">0</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">2</span> <span class="o">|</span>   <span class="k">INDEX</span> <span class="k">FULL</span> <span class="n">SCAN</span><span class="o">|</span> <span class="n">SYS_C0012306</span> <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">13</span> <span class="o">|</span>     <span class="mi">0</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="c1">---------------------------------------------------------------------------------</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Outline</span> <span class="k">Data</span>
+</span><span class='line'><span class="c1">-------------</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/*+</span>
+</span><span class='line'><span class="cm">      BEGIN_OUTLINE_DATA</span>
+</span><span class='line'><span class="cm">      USE_HASH_AGGREGATION(@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      INDEX(@&quot;SEL$1&quot; &quot;T1&quot;@&quot;SEL$1&quot; (&quot;T1&quot;.&quot;C1&quot;))</span>
+</span><span class='line'><span class="cm">      OUTLINE_LEAF(@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      ALL_ROWS</span>
+</span><span class='line'><span class="cm">      DB_VERSION(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      OPTIMIZER_FEATURES_ENABLE(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      IGNORE_OPTIM_EMBEDDED_HINTS</span>
+</span><span class='line'><span class="cm">      END_OUTLINE_DATA</span>
+</span><span class='line'><span class="cm">  */</span>
+</span><span class='line'>
+</span><span class='line'><span class="mi">24</span> <span class="k">rows</span> <span class="n">selected</span><span class="p">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>可见，成功使用该HINT。 oracle的当前版本如下。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">v</span><span class="err">$</span><span class="k">version</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">BANNER</span>
+</span><span class='line'><span class="c1">--------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="n">Oracle</span> <span class="k">Database</span> <span class="mi">11</span><span class="k">g</span> <span class="n">Enterprise</span> <span class="n">Edition</span> <span class="n">Release</span> <span class="mi">11</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span> <span class="o">-</span> <span class="mi">64</span><span class="nb">bit</span> <span class="n">Production</span>
+</span><span class='line'><span class="n">PL</span><span class="o">/</span><span class="k">SQL</span> <span class="n">Release</span> <span class="mi">11</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span> <span class="o">-</span> <span class="n">Production</span>
+</span><span class='line'><span class="n">CORE</span>   <span class="mi">11</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span>  <span class="n">Production</span>
+</span><span class='line'><span class="n">TNS</span> <span class="k">for</span> <span class="n">Linux</span><span class="p">:</span> <span class="k">Version</span> <span class="mi">11</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span> <span class="o">-</span> <span class="n">Production</span>
+</span><span class='line'><span class="n">NLSRTL</span> <span class="k">Version</span> <span class="mi">11</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span> <span class="o">-</span> <span class="n">Production</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
 
 </div>
 
@@ -846,6 +965,10 @@ Note
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/06/04/gdbchang-yong-ming-ling/">GDB常用命令</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/05/29/zheng-ze-biao-da-shi/">正则表达式</a>
       </li>
     
@@ -859,10 +982,6 @@ Note
     
       <li class="post">
         <a href="/blog/2016/05/15/use-oracle-explain/">Use Oracle Explain</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/02/12/the-first/">The First</a>
       </li>
     
   </ul>
