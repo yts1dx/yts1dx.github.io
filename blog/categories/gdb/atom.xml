@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Gdb | Yan Tingshuai's Blog]]></title>
   <link href="http://yts1dx.github.io/blog/categories/gdb/atom.xml" rel="self"/>
   <link href="http://yts1dx.github.io/"/>
-  <updated>2016-06-06T19:54:21+08:00</updated>
+  <updated>2016-06-19T21:14:02+08:00</updated>
   <id>http://yts1dx.github.io/</id>
   <author>
     <name><![CDATA[Yan Tingshuai]]></name>
@@ -37,6 +37,26 @@ p ptr</p></blockquote>
 
 <blockquote><p>p *array@len
 p/x (short[2])0x12345678</p></blockquote>
+
+<h2>将gdb内容输出到文件中</h2>
+
+<blockquote><p>set logging file \ <file name>
+set logging on
+some command
+set logging off</p></blockquote>
+
+<p>在需要输出大量gdb信息时特别有效，例如：输出当前所有thread堆栈信息到一个文件中，然后这些堆栈信息进行分析</p>
+
+<h1>Thread相关内容</h1>
+
+<h2>对所有thread使用相同的commond</h2>
+
+<blockquote><p>thread apply all \<command></p></blockquote>
+
+<h2>为指定thread加入断点</h2>
+
+<blockquote><p>break location thread thread-id
+break location thread thread-id</p></blockquote>
 ]]></content>
   </entry>
   

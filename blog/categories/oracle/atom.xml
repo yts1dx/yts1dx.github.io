@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Oracle | Yan Tingshuai's Blog]]></title>
   <link href="http://yts1dx.github.io/blog/categories/oracle/atom.xml" rel="self"/>
   <link href="http://yts1dx.github.io/"/>
-  <updated>2016-06-06T19:54:21+08:00</updated>
+  <updated>2016-06-19T21:14:02+08:00</updated>
   <id>http://yts1dx.github.io/</id>
   <author>
     <name><![CDATA[Yan Tingshuai]]></name>
@@ -12,6 +12,818 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Oracle Create Outline功能]]></title>
+    <link href="http://yts1dx.github.io/blog/2016/06/19/oracle-create-outlinegong-neng/"/>
+    <updated>2016-06-19T21:04:08+08:00</updated>
+    <id>http://yts1dx.github.io/blog/2016/06/19/oracle-create-outlinegong-neng</id>
+    <content type="html"><![CDATA[<p> # oracle中outline相关系统表</p>
+
+<ul>
+<li>USER_OUTLINES</li>
+<li>USER_OUTLINE_HINTS</li>
+<li>ALL_OUTLINES</li>
+<li>ALL_OUTLINE_HINTS</li>
+<li>DBA_OUTLINES</li>
+<li>DBA_OUTLINE_HINTS</li>
+</ul>
+
+
+<h1>create outline没有指定hint时的生成结果</h1>
+
+<pre><code class="sql">SQL&gt; create outline ol_1 FOR CATEGORY test on select * from t1,t2;
+
+Outline created.
+</code></pre>
+
+<pre><code class="sql">SQL&gt; select * from user_outline_hints where name = 'OL_1';
+
+NAME                     NODE      STAGE   JOIN_POS HINT
+------------------------------ ---------- ---------- ---------- --------------------------------------------------------------------------------
+OL_1                    1      1          0 USE_MERGE_CARTESIAN(@"SEL$1" "T2"@"SEL$1")
+OL_1                    1      1          0 LEADING(@"SEL$1" "T1"@"SEL$1" "T2"@"SEL$1")
+OL_1                    1      1          2 FULL(@"SEL$1" "T2"@"SEL$1")
+OL_1                    1      1          1 FULL(@"SEL$1" "T1"@"SEL$1")
+OL_1                    1      1          0 OUTLINE_LEAF(@"SEL$1")
+OL_1                    1      1          0 ALL_ROWS
+OL_1                    1      1          0 DB_VERSION('11.2.0.2')
+OL_1                    1      1          0 OPTIMIZER_FEATURES_ENABLE('11.2.0.2')
+OL_1                    1      1          0 IGNORE_OPTIM_EMBEDDED_HINTS
+
+9 rows selected.
+</code></pre>
+
+<p>可见，没有指定hint时，create outline的结果是根据plan生成的。</p>
+
+<h1>指定错误hint时，create outline的结果</h1>
+
+<pre><code class="sql">SQL&gt; create outline ol_2 FOR CATEGORY test on select /*+ssssssss*/* from t1,t2;
+
+Outline created.
+
+SQL&gt; select * from user_outline_hints where name='OL_2';
+
+NAME                     NODE      STAGE   JOIN_POS HINT
+------------------------------ ---------- ---------- ---------- --------------------------------------------------------------------------------
+OL_2                    1      1          0 USE_MERGE_CARTESIAN(@"SEL$1" "T2"@"SEL$1")
+OL_2                    1      1          0 LEADING(@"SEL$1" "T1"@"SEL$1" "T2"@"SEL$1")
+OL_2                    1      1          2 FULL(@"SEL$1" "T2"@"SEL$1")
+OL_2                    1      1          1 FULL(@"SEL$1" "T1"@"SEL$1")
+OL_2                    1      1          0 OUTLINE_LEAF(@"SEL$1")
+OL_2                    1      1          0 ALL_ROWS
+OL_2                    1      1          0 DB_VERSION('11.2.0.2')
+OL_2                    1      1          0 OPTIMIZER_FEATURES_ENABLE('11.2.0.2')
+OL_2                    1      1          0 IGNORE_OPTIM_EMBEDDED_HINTS
+</code></pre>
+
+<p>可见，写一个无效的hint，在oracle中并不会报错，并且不会影响outline的生成结果</p>
+
+<h1>指定一个未创建的index，但是create outline后，创建该index</h1>
+
+<pre><code class="sql">SQL&gt; create index t3_idx_1 on t3(c2);
+
+Index created.
+
+SQL&gt; select index_name, include_column from user_indexes where table_name ='T3';
+
+INDEX_NAME             INCLUDE_COLUMN
+------------------------------ --------------
+T3_IDX_1
+</code></pre>
+
+<p>当前T3上面，创建的索引，只有T3_IDX_1。接下来创建一个outline，指定一个不存在的索引T3_IDX_2.</p>
+
+<pre><code class="sql">SQL&gt; create outline OL_3 FOR CATEGORY test on select /*+index(T3 T3_IDX_2)*/ * from T3 where c2 = 1;
+
+Outline created.
+
+SQL&gt; select * from user_outline_hints where name='OL_3';
+
+NAME                     NODE      STAGE   JOIN_POS HINT
+------------------------------ ---------- ---------- ---------- --------------------------------------------------------------------------------
+OL_3                    1      1          1 INDEX_RS_ASC(@"SEL$1" "T3"@"SEL$1" ("T3"."C2"))
+OL_3                    1      1          0 OUTLINE_LEAF(@"SEL$1")
+OL_3                    1      1          0 ALL_ROWS
+OL_3                    1      1          0 DB_VERSION('11.2.0.2')
+OL_3                    1      1          0 OPTIMIZER_FEATURES_ENABLE('11.2.0.2')
+OL_3                    1      1          0 IGNORE_OPTIM_EMBEDDED_HINTS
+
+6 rows selected.
+</code></pre>
+
+<p>根据上面的outline输出可以看见，使用了T3_IDX_1,此时创建新的索引T3_IDX_2.
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">create</span> <span class="k">index</span> <span class="n">t3_idx_2</span> <span class="k">on</span> <span class="n">t3</span><span class="p">(</span><span class="n">c2</span><span class="p">,</span> <span class="n">c3</span><span class="p">);</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">Index</span> <span class="n">created</span><span class="p">.</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">index_name</span><span class="p">,</span> <span class="n">include_column</span> <span class="k">from</span> <span class="n">user_indexes</span> <span class="k">where</span> <span class="k">table_name</span> <span class="o">=&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="n">T3</span><span class="o">&amp;</span><span class="n">rsquo</span><span class="p">;;</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">INDEX_NAME</span>             <span class="n">INCLUDE_COLUMN</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">hr</span> <span class="o">/&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">T3_IDX_2</span>
+</span><span class='line'><span class="n">T3_IDX_1</span>
+</span><span class='line'><span class="o">&lt;</span><span class="n">code</span><span class="o">&gt;</span>
+</span><span class='line'><span class="err">再次查看</span><span class="n">outline</span> <span class="n">OL_3</span><span class="err">的情况</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;</span><span class="k">sql</span>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">user_outline_hints</span> <span class="k">where</span> <span class="n">name</span><span class="o">=&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="n">OL_3</span><span class="o">&amp;</span><span class="n">rsquo</span><span class="p">;;</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">NAME</span>                     <span class="n">NODE</span>      <span class="n">STAGE</span>   <span class="n">JOIN_POS</span> <span class="n">HINT</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">hr</span> <span class="o">/&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">OL_3</span>                    <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">1</span> <span class="n">INDEX_RS_ASC</span><span class="p">(</span><span class="o">@&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">SEL</span><span class="err">$</span><span class="mi">1</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">T3</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span><span class="o">@&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">SEL</span><span class="err">$</span><span class="mi">1</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span> <span class="p">(</span><span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">T3</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;.</span><span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">C2</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;))</span>
+</span><span class='line'><span class="n">OL_3</span>                    <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">OUTLINE_LEAF</span><span class="p">(</span><span class="o">@&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">SEL</span><span class="err">$</span><span class="mi">1</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;)</span>
+</span><span class='line'><span class="n">OL_3</span>                    <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">ALL_ROWS</span>
+</span><span class='line'><span class="n">OL_3</span>                    <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">DB_VERSION</span><span class="p">(</span><span class="o">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="mi">11</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span><span class="o">&amp;</span><span class="n">rsquo</span><span class="p">;)</span>
+</span><span class='line'><span class="n">OL_3</span>                    <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">OPTIMIZER_FEATURES_ENABLE</span><span class="p">(</span><span class="o">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="mi">11</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span><span class="o">&amp;</span><span class="n">rsquo</span><span class="p">;)</span>
+</span><span class='line'><span class="n">OL_3</span>                    <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">IGNORE_OPTIM_EMBEDDED_HINTS</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="mi">6</span> <span class="k">rows</span> <span class="n">selected</span><span class="p">.</span>
+</span><span class='line'><span class="o">&lt;</span><span class="n">code</span><span class="o">&gt;</span>
+</span><span class='line'><span class="err">可见，仍旧使用的是</span><span class="n">T3_IDX_1</span><span class="p">.</span> <span class="err">那么检验一下</span><span class="n">T3_IDX_2</span><span class="err">是否能够生效</span><span class="p">,</span> <span class="err">再根据前面的语句创建一个</span><span class="n">OL_6</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;</span><span class="k">sql</span>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">create</span> <span class="n">outline</span> <span class="n">OL_6</span> <span class="k">FOR</span> <span class="n">CATEGORY</span> <span class="n">test</span> <span class="k">on</span> <span class="k">select</span> <span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;+</span><span class="k">index</span><span class="p">(</span><span class="n">T3</span> <span class="n">T3_IDX_2</span><span class="p">)</span><span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span> <span class="o">*</span> <span class="k">from</span> <span class="n">T3</span> <span class="k">where</span> <span class="n">c2</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">Outline</span> <span class="n">created</span><span class="p">.</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">user_outline_hints</span> <span class="k">where</span> <span class="n">name</span><span class="o">=&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="n">OL_6</span><span class="o">&amp;</span><span class="n">rsquo</span><span class="p">;;</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">NAME</span>                     <span class="n">NODE</span>      <span class="n">STAGE</span>   <span class="n">JOIN_POS</span> <span class="n">HINT</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">hr</span> <span class="o">/&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">OL_6</span>                    <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">1</span> <span class="n">INDEX_RS_ASC</span><span class="p">(</span><span class="o">@&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">SEL</span><span class="err">$</span><span class="mi">1</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">T3</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span><span class="o">@&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">SEL</span><span class="err">$</span><span class="mi">1</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span> <span class="p">(</span><span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">T3</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;.</span><span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">C2</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">T3</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;.</span><span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">C3</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;))</span>
+</span><span class='line'><span class="n">OL_6</span>                    <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">OUTLINE_LEAF</span><span class="p">(</span><span class="o">@&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">SEL</span><span class="err">$</span><span class="mi">1</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;)</span>
+</span><span class='line'><span class="n">OL_6</span>                    <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">ALL_ROWS</span>
+</span><span class='line'><span class="n">OL_6</span>                    <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">DB_VERSION</span><span class="p">(</span><span class="o">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="mi">11</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span><span class="o">&amp;</span><span class="n">rsquo</span><span class="p">;)</span>
+</span><span class='line'><span class="n">OL_6</span>                    <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">OPTIMIZER_FEATURES_ENABLE</span><span class="p">(</span><span class="o">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="mi">11</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span><span class="o">&amp;</span><span class="n">rsquo</span><span class="p">;)</span>
+</span><span class='line'><span class="n">OL_6</span>                    <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">IGNORE_OPTIM_EMBEDDED_HINTS</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="mi">6</span> <span class="k">rows</span> <span class="n">selected</span><span class="p">.</span>
+</span></code></pre></td></tr></table></div></figure>
+可见，此时的outline中指定了T3_IDX_2</p>
+
+<h1>create outline时，对exits的判断</h1>
+
+<h2>创建具有相同outline name的情况</h2>
+
+<pre><code class="sql">SQL&gt; create outline exist_ol on select * from t3;
+
+Outline created.
+
+SQL&gt; create outline exist_ol on select * from t4;
+create outline exist_ol on select * from t4
+                                         *
+ERROR at line 1:
+ORA-18004: outline already exists
+
+
+SQL&gt; select name ,category, used ,sql_text from user_outlines where CATEGORY = 'DEFAULT';
+
+NAME                   CATEGORY               USED   SQL_TEXT
+------------------------------ ------------------------------ ------ --------------------------------------------------------------------------------
+CC                 DEFAULT                UNUSED select * from t1
+C1                 DEFAULT                UNUSED select /*+ssssss*/* from t1
+EXIST_OL               DEFAULT                UNUSED select * from t3
+</code></pre>
+
+<p>由此可见在outline name相同，即使语句不同，仍旧无法创建</p>
+
+<h2>outline name 不同，sql语句相同</h2>
+
+<pre><code class="`sql">SQL&gt; create outline exist_ol_1 on select * from t3;
+create outline exist_ol_1 on select * from t3
+                                           *
+ERROR at line 1:
+ORA-18004: outline already exists
+
+
+SQL&gt; select name ,category, used ,sql_text from user_outlines where CATEGORY = 'DEFAULT';
+
+NAME                   CATEGORY               USED   SQL_TEXT
+------------------------------ ------------------------------ ------ --------------------------------------------------------------------------------
+CC                 DEFAULT                UNUSED select * from t1
+C1                 DEFAULT                UNUSED select /*+ssssss*/* from t1
+EXIST_OL               DEFAULT                UNUSED select * from t3
+</code></pre>
+
+<p> 可见，虽然outline name 不同，但是sql相同的情况下仍旧报错</p>
+
+<h2>outline name不同，sql不同，计划相同的情况</h2>
+
+<pre><code class="`sql"> SQL&gt; create outline exist_ol_1 on select /*+sssss*/* from t3;
+
+Outline created.
+
+SQL&gt; select name ,category, used ,sql_text from user_outlines where CATEGORY = 'DEFAULT';
+
+NAME                   CATEGORY               USED   SQL_TEXT
+------------------------------ ------------------------------ ------ --------------------------------------------------------------------------------
+CC                 DEFAULT                UNUSED select * from t1
+C1                 DEFAULT                UNUSED select /*+ssssss*/* from t1
+EXIST_OL               DEFAULT                UNUSED select * from t3
+EXIST_OL_1             DEFAULT                UNUSED select /*+sssss*/* from t3
+</code></pre>
+
+<p> 可见，在sql中加入无效的hint后，仍旧成功
+ ```sql
+ SQL> create outline exist_ol_2 on select * from                t3;
+create outline exist_ol_2 on select * from        t3
+                                                          *
+ERROR at line 1:
+ORA-18004: outline already exists</p>
+
+<p>SQL> select name ,category, used ,sql_text from user_outlines where CATEGORY = &lsquo;DEFAULT&rsquo;;</p>
+
+<p>NAME                   CATEGORY               USED   SQL_TEXT</p>
+
+<hr />
+
+<p>CC                 DEFAULT                UNUSED select * from t1
+C1                 DEFAULT                UNUSED select /<em>+ssssss</em>/<em> from t1
+EXIST_OL               DEFAULT                UNUSED select * from t3
+EXIST_OL_1             DEFAULT                UNUSED select /</em>+sssss<em>/</em> from t3
+ ```
+ 但是，仅仅是加入无效的空格的话，仍旧无法创建。</p>
+
+<h1>create or replace的表现</h1>
+
+<p>oracle文档中的描述</p>
+
+<blockquote><p>Specify OR REPLACE to replace an existing outline with a new outline of the same name.</p></blockquote>
+
+<h2>使用原来的名字，替换outline</h2>
+
+<pre><code class="sql">SQL&gt; select name, sql_text, category from user_outlines where name = 'CC';
+
+NAME                   SQL_TEXT                                     CATEGORY
+------------------------------ -------------------------------------------------------------------------------- ------------------------------
+CC                 select * from t1,t2                              DEFAULT
+
+SQL&gt; create or replace outline cc on select * from t1,t2;
+
+Outline created.
+</code></pre>
+
+<p>可见 ，当outlie_name和sql完全相同时可以成功
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">name</span><span class="p">,</span> <span class="n">sql_text</span><span class="p">,</span> <span class="n">category</span> <span class="k">from</span> <span class="n">user_outlines</span> <span class="k">where</span> <span class="n">name</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="n">CC</span><span class="o">&amp;</span><span class="n">rsquo</span><span class="p">;;</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">NAME</span>                   <span class="n">SQL_TEXT</span>                                     <span class="n">CATEGORY</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">hr</span> <span class="o">/&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">CC</span>                 <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">t1</span><span class="p">,</span><span class="n">t2</span>                              <span class="k">DEFAULT</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">create</span> <span class="k">or</span> <span class="k">replace</span> <span class="n">outline</span> <span class="n">cc</span> <span class="k">on</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">t1</span><span class="p">,</span><span class="n">t2</span><span class="p">;</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">Outline</span> <span class="n">created</span><span class="p">.</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">create</span> <span class="k">or</span> <span class="k">replace</span> <span class="n">outline</span> <span class="n">cc</span> <span class="k">on</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">t1</span><span class="p">;</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">Outline</span> <span class="n">created</span><span class="p">.</span>
+</span></code></pre></td></tr></table></div></figure>
+可见 ，当outlie_name相同和sql不同时可以成功，并对原理的sql进行替换。以上这两种，是符合oracle描述的。</p>
+
+<h2>outline name不存在，outline已经存在的情况下</h2>
+
+<pre><code class="sql">SQL&gt; select name, sql_text, category from user_outlines where name = 'CC_1';
+
+NAME                   SQL_TEXT                                     CATEGORY
+------------------------------ -------------------------------------------------------------------------------- ------------------------------
+CC_1                   select * from t1
+
+SQL&gt; create or replace outline cc on select * from t1;
+
+Outline created.
+
+SQL&gt; select name, sql_text, category from user_outlines where name = 'CC_1';
+
+no rows selected
+
+SQL&gt; select name, sql_text, category from user_outlines where name = 'CC';
+
+NAME                   SQL_TEXT                                     CATEGORY
+------------------------------ -------------------------------------------------------------------------------- ------------------------------
+CC                 select * from t1                                 DEFAULT
+</code></pre>
+
+<p>可见，在对已经存在的sql使用replace时，outline_name会被直接替换掉。</p>
+
+<h1>总结create outline在oracle中的表现</h1>
+
+<ul>
+<li>outline是完全按照plan生成的</li>
+<li>create outline时忽略无效和错误的hint，并不会给客户端返回错误</li>
+<li>生成的outline只会受当前的plan影响，当前指定的hint在未来创建时也不会加入到当前的outline中。</li>
+<li>create outlline的重复性，会同时判断outline_name和sql（不是简单的字符串匹配）</li>
+<li>create or replace的表现：如果outline name已经存在，sql不同时，则替换sql；如果sql已经存在，outline不同时，则替换outline name</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Oracle中transform对hint的影响]]></title>
+    <link href="http://yts1dx.github.io/blog/2016/06/19/oraclezhong-transformdui-hintde-ying-xiang/"/>
+    <updated>2016-06-19T20:56:39+08:00</updated>
+    <id>http://yts1dx.github.io/blog/2016/06/19/oraclezhong-transformdui-hintde-ying-xiang</id>
+    <content type="html"><![CDATA[<h1>Oracle中transform对指定hint的影响</h1>
+
+<h2>对index hint的影响</h2>
+
+<h3>没指定hint的情况</h3>
+
+<pre><code class="sql">SQL&gt; explain plan into plan_table for select * from t2 where c1 &gt; any (select c2 from T3 where c2 = 1);
+
+Explained.
+
+SQL&gt; select * from table(dbms_xplan.display('PLAN_TABLE',NULL,'OUTLINE'));
+
+PLAN_TABLE_OUTPUT
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 2448468165
+
+---------------------------------------------------------------------------------------------
+| Id  | Operation            | Name     | Rows  | Bytes | Cost (%CPU)| Time     |
+---------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT         |          |     1 |    29 |     0   (0)| 00:00:01 |
+|   1 |  NESTED LOOPS SEMI       |          |     1 |    29 |     0   (0)| 00:00:01 |
+|   2 |   TABLE ACCESS BY INDEX ROWID| T2       |     1 |    26 |     0   (0)| 00:00:01 |
+|*  3 |    INDEX RANGE SCAN      | SYS_C0012307 |     1 |       |     0   (0)| 00:00:01 |
+|*  4 |   INDEX RANGE SCAN       | T3_IDX_1     |     1 |     3 |     0   (0)| 00:00:01 |
+---------------------------------------------------------------------------------------------
+
+Outline Data
+-------------
+
+  /*+
+      BEGIN_OUTLINE_DATA
+      USE_NL(@"SEL$5DA710D3" "T3"@"SEL$2")
+      LEADING(@"SEL$5DA710D3" "T2"@"SEL$1" "T3"@"SEL$2")
+      INDEX(@"SEL$5DA710D3" "T3"@"SEL$2" ("T3"."C2"))
+      INDEX_RS_ASC(@"SEL$5DA710D3" "T2"@"SEL$1" ("T2"."C1"))
+      OUTLINE(@"SEL$2")
+      OUTLINE(@"SEL$1")
+      UNNEST(@"SEL$2")
+      OUTLINE_LEAF(@"SEL$5DA710D3")
+      ALL_ROWS
+      DB_VERSION('11.2.0.2')
+      OPTIMIZER_FEATURES_ENABLE('11.2.0.2')
+      IGNORE_OPTIM_EMBEDDED_HINTS
+      END_OUTLINE_DATA
+  */
+
+Predicate Information (identified by operation id):
+---------------------------------------------------
+
+   3 - access("C1"&gt;1)
+   4 - access("C2"=1)
+       filter("C1"&gt;"C2")
+
+38 rows selected.
+</code></pre>
+
+<p>可见，在不一定hint的情况下对于t3表的访问，使用了T3_IDX_1索引；同时通过计划可知，消除了子查询生成了semi join。而且，user_nl/leading/index中qb_name都是transform之后的新值.</p>
+
+<h3>按照改写前的query block指定hint</h3>
+
+<pre><code class="sql">SQL&gt; explain plan into plan_table for select /*+index(@"SEL$2" "T3"@"SEL$2" T3_IDX_2)*/* from t2 where c1 &gt; any (select c2 from T3 where c2 = 1);
+
+Explained.
+
+SQL&gt; select * from table(dbms_xplan.display('PLAN_TABLE',NULL,'OUTLINE'));
+
+PLAN_TABLE_OUTPUT
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 2034984401
+
+---------------------------------------------------------------------------------------------
+| Id  | Operation            | Name     | Rows  | Bytes | Cost (%CPU)| Time     |
+---------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT         |          |     1 |    29 |     1   (0)| 00:00:01 |
+|   1 |  NESTED LOOPS SEMI       |          |     1 |    29 |     1   (0)| 00:00:01 |
+|   2 |   TABLE ACCESS BY INDEX ROWID| T2       |     1 |    26 |     0   (0)| 00:00:01 |
+|*  3 |    INDEX RANGE SCAN      | SYS_C0012307 |     1 |       |     0   (0)| 00:00:01 |
+|*  4 |   INDEX RANGE SCAN       | T3_IDX_2     |     1 |     3 |     1   (0)| 00:00:01 |
+---------------------------------------------------------------------------------------------
+
+Outline Data
+-------------
+
+  /*+
+      BEGIN_OUTLINE_DATA
+      USE_NL(@"SEL$5DA710D3" "T3"@"SEL$2")
+      LEADING(@"SEL$5DA710D3" "T2"@"SEL$1" "T3"@"SEL$2")
+      INDEX(@"SEL$5DA710D3" "T3"@"SEL$2" ("T3"."C2" "T3"."C3"))
+      INDEX_RS_ASC(@"SEL$5DA710D3" "T2"@"SEL$1" ("T2"."C1"))
+      OUTLINE(@"SEL$2")
+      OUTLINE(@"SEL$1")
+      UNNEST(@"SEL$2")
+      OUTLINE_LEAF(@"SEL$5DA710D3")
+      ALL_ROWS
+      DB_VERSION('11.2.0.2')
+      OPTIMIZER_FEATURES_ENABLE('11.2.0.2')
+      IGNORE_OPTIM_EMBEDDED_HINTS
+      END_OUTLINE_DATA
+  */
+
+Predicate Information (identified by operation id):
+---------------------------------------------------
+
+   3 - access("C1"&gt;1)
+   4 - access("C2"=1)
+       filter("C1"&gt;"C2")
+
+38 rows selected.
+</code></pre>
+
+<p>hint中，指定的是改写前的qb_name &ldquo;SEL$2"，可见t3使用了T3_IDX_2，hint指定生效。</p>
+
+<h3>hint按照改写后的qb_name指定</h3>
+
+<pre><code class="sql">SQL&gt; explain plan into plan_table for select /*+index(@"SEL$5DA710D3" "T3"@"SEL$5DA710D3" T3_IDX_2)*/* from t2 where c1 &gt; any (select c2 from T3 where c2 = 1);
+
+Explained.
+
+SQL&gt; select * from table(dbms_xplan.display('PLAN_TABLE',NULL,'OUTLINE'));
+
+PLAN_TABLE_OUTPUT
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 2448468165
+
+---------------------------------------------------------------------------------------------
+| Id  | Operation            | Name     | Rows  | Bytes | Cost (%CPU)| Time     |
+---------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT         |          |     1 |    29 |     0   (0)| 00:00:01 |
+|   1 |  NESTED LOOPS SEMI       |          |     1 |    29 |     0   (0)| 00:00:01 |
+|   2 |   TABLE ACCESS BY INDEX ROWID| T2       |     1 |    26 |     0   (0)| 00:00:01 |
+|*  3 |    INDEX RANGE SCAN      | SYS_C0012307 |     1 |       |     0   (0)| 00:00:01 |
+|*  4 |   INDEX RANGE SCAN       | T3_IDX_1     |     1 |     3 |     0   (0)| 00:00:01 |
+---------------------------------------------------------------------------------------------
+
+Outline Data
+-------------
+
+  /*+
+      BEGIN_OUTLINE_DATA
+      USE_NL(@"SEL$5DA710D3" "T3"@"SEL$2")
+      LEADING(@"SEL$5DA710D3" "T2"@"SEL$1" "T3"@"SEL$2")
+      INDEX(@"SEL$5DA710D3" "T3"@"SEL$2" ("T3"."C2"))
+      INDEX_RS_ASC(@"SEL$5DA710D3" "T2"@"SEL$1" ("T2"."C1"))
+      OUTLINE(@"SEL$2")
+      OUTLINE(@"SEL$1")
+      UNNEST(@"SEL$2")
+      OUTLINE_LEAF(@"SEL$5DA710D3")
+      ALL_ROWS
+      DB_VERSION('11.2.0.2')
+      OPTIMIZER_FEATURES_ENABLE('11.2.0.2')
+      IGNORE_OPTIM_EMBEDDED_HINTS
+      END_OUTLINE_DATA
+  */
+
+Predicate Information (identified by operation id):
+---------------------------------------------------
+
+   3 - access("C1"&gt;1)
+   4 - access("C2"=1)
+       filter("C1"&gt;"C2")
+
+38 rows selected.
+</code></pre>
+
+<h3>总结</h3>
+
+<p>通过对不同位置的qb_name更改，可以生效的形式为:
+<code>sql
+explain plan into plan_table for select /*+index(@"SEL$2" "T3"@"SEL$2" T3_IDX_2)*/* from t2 where c1 &gt; any (select c2 from T3 where c2 = 1);
+</code>
+<code>sql
+explain plan into plan_table for select /*+index(@"SEL$5DA710D3" "T3"@"SEL$2" T3_IDX_2)*/* from t2 where c1 &gt; any (select c2 from T3 where c2 = 1);
+</code>
+无效的qb_name指定形式为：
+<code>sql
+explain plan into plan_table for select /*+index(@"SEL$1" "T3"@"SEL$2" T3_IDX_2)*/* from t2 where c1 &gt; any (select c2 from T3 where c2 = 1);
+explain plan into plan_table for select /*+index(@"SEL$5DA710D3" "T3"@"SEL$5DA710D3" T3_IDX_2)*/* from t2 where c1 &gt; any (select c2 from T3 where c2 = 1);
+</code>
+结论：在index hint面对transform时，如果想生效，需要满足两个条件：
+1. table后面的qb_name必须是transform之前的qb_name
+2. 整个index所指定的qb_name可以是改写之前的(本例中：SEL\$2)，也可以是改写之后由系统生成的(本例中：SEL\$5DA710D3)，但不可以是改写前外层的(本例中：SEL\$1)</p>
+
+<h2>对leading hint的影响</h2>
+
+<h3>没指定hint的情况</h3>
+
+<pre><code class="sql">SQL&gt; explain plan into plan_table for select * from t1 where c1 &gt; any (select c2 from (select max(t2.c2) from t2,t3 group by t2.c1) tt);
+
+Explained.
+
+SQL&gt; select * from table(dbms_xplan.display('PLAN_TABLE',NULL,'OUTLINE'));
+
+PLAN_TABLE_OUTPUT
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 3676677615
+
+----------------------------------------------------------------------------------------
+| Id  | Operation       | Name         | Rows  | Bytes | Cost (%CPU)| Time     |
+----------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT    |          |     1 |    26 |     5  (20)| 00:00:01 |
+|*  1 |  FILTER         |          |       |       |        |          |
+|   2 |   TABLE ACCESS FULL | T1           |     1 |    26 |     2   (0)| 00:00:01 |
+|*  3 |   FILTER        |          |       |       |        |          |
+|   4 |    HASH GROUP BY    |          |     1 |    13 |     3  (34)| 00:00:01 |
+|   5 |     MERGE JOIN CARTESIAN|          |     1 |    13 |     2   (0)| 00:00:01 |
+|   6 |      INDEX FULL SCAN    | SYS_C0012307 |     1 |    13 |     0   (0)| 00:00:01 |
+|   7 |      BUFFER SORT    |          |     3 |       |     3  (34)| 00:00:01 |
+|   8 |       TABLE ACCESS FULL | T3           |     3 |       |     2   (0)| 00:00:01 |
+----------------------------------------------------------------------------------------
+
+Outline Data
+-------------
+
+  /*+
+      BEGIN_OUTLINE_DATA
+      USE_HASH_AGGREGATION(@"SEL$335DD26A")
+      USE_MERGE_CARTESIAN(@"SEL$335DD26A" "T3"@"SEL$3")
+      LEADING(@"SEL$335DD26A" "T2"@"SEL$3" "T3"@"SEL$3")
+      FULL(@"SEL$335DD26A" "T3"@"SEL$3")
+      INDEX(@"SEL$335DD26A" "T2"@"SEL$3" ("T2"."C1"))
+      FULL(@"SEL$1" "T1"@"SEL$1")
+      OUTLINE(@"SEL$3")
+      OUTLINE(@"SEL$2")
+      OUTLINE_LEAF(@"SEL$1")
+      MERGE(@"SEL$3")
+      OUTLINE_LEAF(@"SEL$335DD26A")
+      ALL_ROWS
+      DB_VERSION('11.2.0.2')
+      OPTIMIZER_FEATURES_ENABLE('11.2.0.2')
+      IGNORE_OPTIM_EMBEDDED_HINTS
+      END_OUTLINE_DATA
+  */
+
+Predicate Information (identified by operation id):
+---------------------------------------------------
+
+   1 - filter( EXISTS (SELECT 0 FROM "T3" "T3","T2" "T2" GROUP BY "T2"."C1",:B1
+          HAVING :B2&gt;:B3))
+   3 - filter(:B1&gt;:B2)
+
+45 rows selected.
+</code></pre>
+
+<p>由outline的内容可知，在没有指定hint的情况下，join的顺序为t2,t3</p>
+
+<h3>对leading指定改写前的qb_name</h3>
+
+<pre><code class="sql">SQL&gt; explain plan into plan_table for select /*+LEADING(@"SEL$3" "T3"@"SEL$3" "T2"@"SEL$3")*/* from t1 where c1 &gt; any (select c2 from (select max(t2.c2) from t2,t3 group by t2.c1) tt);
+
+Explained.
+
+SQL&gt; select * from table(dbms_xplan.display('PLAN_TABLE',NULL,'OUTLINE'));
+
+PLAN_TABLE_OUTPUT
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 3161554821
+
+----------------------------------------------------------------------------------------
+| Id  | Operation       | Name         | Rows  | Bytes | Cost (%CPU)| Time     |
+----------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT    |          |     1 |    26 |     5  (20)| 00:00:01 |
+|*  1 |  FILTER         |          |       |       |        |          |
+|   2 |   TABLE ACCESS FULL | T1           |     1 |    26 |     2   (0)| 00:00:01 |
+|*  3 |   FILTER        |          |       |       |        |          |
+|   4 |    HASH GROUP BY    |          |     1 |    13 |     3  (34)| 00:00:01 |
+|   5 |     MERGE JOIN CARTESIAN|          |     1 |    13 |     2   (0)| 00:00:01 |
+|   6 |      TABLE ACCESS FULL  | T3           |     3 |       |     2   (0)| 00:00:01 |
+|   7 |      BUFFER SORT    |          |     1 |    13 |     1 (100)| 00:00:01 |
+|   8 |       INDEX FULL SCAN   | SYS_C0012307 |     1 |    13 |     0   (0)| 00:00:01 |
+----------------------------------------------------------------------------------------
+
+Outline Data
+-------------
+
+  /*+
+      BEGIN_OUTLINE_DATA
+      USE_HASH_AGGREGATION(@"SEL$335DD26A")
+      USE_MERGE_CARTESIAN(@"SEL$335DD26A" "T2"@"SEL$3")
+      LEADING(@"SEL$335DD26A" "T3"@"SEL$3" "T2"@"SEL$3")
+      INDEX(@"SEL$335DD26A" "T2"@"SEL$3" ("T2"."C1"))
+      FULL(@"SEL$335DD26A" "T3"@"SEL$3")
+      FULL(@"SEL$1" "T1"@"SEL$1")
+      OUTLINE(@"SEL$3")
+      OUTLINE(@"SEL$2")
+      OUTLINE_LEAF(@"SEL$1")
+      MERGE(@"SEL$3")
+      OUTLINE_LEAF(@"SEL$335DD26A")
+      ALL_ROWS
+      DB_VERSION('11.2.0.2')
+      OPTIMIZER_FEATURES_ENABLE('11.2.0.2')
+      IGNORE_OPTIM_EMBEDDED_HINTS
+      END_OUTLINE_DATA
+  */
+
+Predicate Information (identified by operation id):
+---------------------------------------------------
+
+   1 - filter( EXISTS (SELECT /*+ LEADING ("T3" "T2") */ 0 FROM "T3" "T3","T2"
+          "T2" GROUP BY "T2"."C1",:B1 HAVING :B2&gt;:B3))
+   3 - filter(:B1&gt;:B2)
+
+45 rows selected.
+</code></pre>
+
+<p>可见当指定/*+LEADING(@&ldquo;SEL$3&rdquo; &ldquo;T3&rdquo;@&ldquo;SEL$3&rdquo; &ldquo;T2&rdquo;@&ldquo;SEL$3&rdquo;)*/时，hint生效，join的顺序变为t3,t2</p>
+
+<h3>对leading指定改写后的qb_name</h3>
+
+<pre><code class="sql">SQL&gt; explain plan into plan_table for select /*+LEADING(@"SEL$335DD26A" "T3"@"SEL$3" "T2"@"SEL$3")*/* from t1 where c1 &gt; any (select c2 from (select max(t2.c2) from t2,t3 group by t2.c1) tt);
+
+Explained.
+
+SQL&gt; select * from table(dbms_xplan.display('PLAN_TABLE',NULL,'OUTLINE'));
+
+PLAN_TABLE_OUTPUT
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 3161554821
+
+----------------------------------------------------------------------------------------
+| Id  | Operation       | Name         | Rows  | Bytes | Cost (%CPU)| Time     |
+----------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT    |          |     1 |    26 |     5  (20)| 00:00:01 |
+|*  1 |  FILTER         |          |       |       |        |          |
+|   2 |   TABLE ACCESS FULL | T1           |     1 |    26 |     2   (0)| 00:00:01 |
+|*  3 |   FILTER        |          |       |       |        |          |
+|   4 |    HASH GROUP BY    |          |     1 |    13 |     3  (34)| 00:00:01 |
+|   5 |     MERGE JOIN CARTESIAN|          |     1 |    13 |     2   (0)| 00:00:01 |
+|   6 |      TABLE ACCESS FULL  | T3           |     3 |       |     2   (0)| 00:00:01 |
+|   7 |      BUFFER SORT    |          |     1 |    13 |     1 (100)| 00:00:01 |
+|   8 |       INDEX FULL SCAN   | SYS_C0012307 |     1 |    13 |     0   (0)| 00:00:01 |
+----------------------------------------------------------------------------------------
+
+Outline Data
+-------------
+
+  /*+
+      BEGIN_OUTLINE_DATA
+      USE_HASH_AGGREGATION(@"SEL$335DD26A")
+      USE_MERGE_CARTESIAN(@"SEL$335DD26A" "T2"@"SEL$3")
+      LEADING(@"SEL$335DD26A" "T3"@"SEL$3" "T2"@"SEL$3")
+      INDEX(@"SEL$335DD26A" "T2"@"SEL$3" ("T2"."C1"))
+      FULL(@"SEL$335DD26A" "T3"@"SEL$3")
+      FULL(@"SEL$1" "T1"@"SEL$1")
+      OUTLINE(@"SEL$3")
+      OUTLINE(@"SEL$2")
+      OUTLINE_LEAF(@"SEL$1")
+      MERGE(@"SEL$3")
+      OUTLINE_LEAF(@"SEL$335DD26A")
+      ALL_ROWS
+      DB_VERSION('11.2.0.2')
+      OPTIMIZER_FEATURES_ENABLE('11.2.0.2')
+      IGNORE_OPTIM_EMBEDDED_HINTS
+      END_OUTLINE_DATA
+  */
+
+Predicate Information (identified by operation id):
+---------------------------------------------------
+
+   1 - filter( EXISTS (SELECT /*+ LEADING ("T3" "T2") */ 0 FROM "T3" "T3","T2"
+          "T2" GROUP BY "T2"."C1",:B1 HAVING :B2&gt;:B3))
+   3 - filter(:B1&gt;:B2)
+
+45 rows selected.
+</code></pre>
+
+<p>可见当指定/*+LEADING(@&ldquo;SEL$335DD26A&rdquo; &ldquo;T3&rdquo;@&ldquo;SEL$3&rdquo; &ldquo;T2&rdquo;@&ldquo;SEL$3&rdquo;)*/时，hint生效，join的顺序变为t3,t2</p>
+
+<h3>对leading指定改写前上层的qb_name</h3>
+
+<pre><code class="sql">SQL&gt; select * from table(dbms_xplan.display('PLAN_TABLE',NULL,'OUTLINE'));
+
+PLAN_TABLE_OUTPUT
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 3676677615
+
+----------------------------------------------------------------------------------------
+| Id  | Operation       | Name         | Rows  | Bytes | Cost (%CPU)| Time     |
+----------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT    |          |     1 |    26 |     5  (20)| 00:00:01 |
+|*  1 |  FILTER         |          |       |       |        |          |
+|   2 |   TABLE ACCESS FULL | T1           |     1 |    26 |     2   (0)| 00:00:01 |
+|*  3 |   FILTER        |          |       |       |        |          |
+|   4 |    HASH GROUP BY    |          |     1 |    13 |     3  (34)| 00:00:01 |
+|   5 |     MERGE JOIN CARTESIAN|          |     1 |    13 |     2   (0)| 00:00:01 |
+|   6 |      INDEX FULL SCAN    | SYS_C0012307 |     1 |    13 |     0   (0)| 00:00:01 |
+|   7 |      BUFFER SORT    |          |     3 |       |     3  (34)| 00:00:01 |
+|   8 |       TABLE ACCESS FULL | T3           |     3 |       |     2   (0)| 00:00:01 |
+----------------------------------------------------------------------------------------
+
+Outline Data
+-------------
+
+  /*+
+      BEGIN_OUTLINE_DATA
+      USE_HASH_AGGREGATION(@"SEL$335DD26A")
+      USE_MERGE_CARTESIAN(@"SEL$335DD26A" "T3"@"SEL$3")
+      LEADING(@"SEL$335DD26A" "T2"@"SEL$3" "T3"@"SEL$3")
+      FULL(@"SEL$335DD26A" "T3"@"SEL$3")
+      INDEX(@"SEL$335DD26A" "T2"@"SEL$3" ("T2"."C1"))
+      FULL(@"SEL$1" "T1"@"SEL$1")
+      OUTLINE(@"SEL$3")
+      OUTLINE(@"SEL$2")
+      OUTLINE_LEAF(@"SEL$1")
+      MERGE(@"SEL$3")
+      OUTLINE_LEAF(@"SEL$335DD26A")
+      ALL_ROWS
+      DB_VERSION('11.2.0.2')
+      OPTIMIZER_FEATURES_ENABLE('11.2.0.2')
+      IGNORE_OPTIM_EMBEDDED_HINTS
+      END_OUTLINE_DATA
+  */
+
+Predicate Information (identified by operation id):
+---------------------------------------------------
+
+   1 - filter( EXISTS (SELECT 0 FROM "T3" "T3","T2" "T2" GROUP BY "T2"."C1",:B1
+          HAVING :B2&gt;:B3))
+   3 - filter(:B1&gt;:B2)
+
+45 rows selected.
+</code></pre>
+
+<p>可见当指定/*+LEADING(@&ldquo;SEL\$1 "T3&rdquo;@&ldquo;SEL\$3&rdquo; &ldquo;T2&rdquo;@&ldquo;SEL\$3&rdquo;)*/时，hint无效，join的顺序仍旧为t2,t3</p>
+
+<h3>总结</h3>
+
+<p>对于在hint中指定leading时，要想使hint生效需要保证：qb_name可以是改写之前的（本例中：SEL\$3），也可以是改写之后由系统生成的(本例中：SEL\$335DD26A)，但不可以是改写前外层的(本例中：SEL\$1)</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Use Oracle Explain]]></title>

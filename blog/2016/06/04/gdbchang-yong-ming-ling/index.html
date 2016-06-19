@@ -11,8 +11,7 @@
   
   <meta name="description" content="GDB输出相关 打印格式指定 print / \&lt;f> \&lt;expr> 输出基类执行绑定的动态类型 set print object on
 p ptr 输出内存形式 x / nfu addr 以数组形式打印内存 p *array@len
-p/x (short[2])0x12345678
-">
+p/x (short[2])0x12345678 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -109,6 +108,26 @@ p ptr</p></blockquote>
 
 <blockquote><p>p *array@len
 p/x (short[2])0x12345678</p></blockquote>
+
+<h2>将gdb内容输出到文件中</h2>
+
+<blockquote><p>set logging file \ <file name>
+set logging on
+some command
+set logging off</p></blockquote>
+
+<p>在需要输出大量gdb信息时特别有效，例如：输出当前所有thread堆栈信息到一个文件中，然后这些堆栈信息进行分析</p>
+
+<h1>Thread相关内容</h1>
+
+<h2>对所有thread使用相同的commond</h2>
+
+<blockquote><p>thread apply all \<command></p></blockquote>
+
+<h2>为指定thread加入断点</h2>
+
+<blockquote><p>break location thread thread-id
+break location thread thread-id</p></blockquote>
 </div>
 
 
@@ -148,6 +167,8 @@ p/x (short[2])0x12345678</p></blockquote>
         <a class="basic-alignment left" href="/blog/2016/05/29/zheng-ze-biao-da-shi/" title="Previous Post: 正则表达式">&laquo; 正则表达式</a>
       
       
+        <a class="basic-alignment right" href="/blog/2016/06/19/oraclezhong-transformdui-hintde-ying-xiang/" title="Next Post: Oracle中transform对hint的影响">Oracle中transform对hint的影响 &raquo;</a>
+      
     </p>
   </footer>
 </article>
@@ -161,6 +182,14 @@ p/x (short[2])0x12345678</p></blockquote>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/06/19/oracle-create-outlinegong-neng/">Oracle Create Outline功能</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/06/19/oraclezhong-transformdui-hintde-ying-xiang/">Oracle中transform对hint的影响</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/06/04/gdbchang-yong-ming-ling/">GDB常用命令</a>
       </li>
     
@@ -170,14 +199,6 @@ p/x (short[2])0x12345678</p></blockquote>
     
       <li class="post">
         <a href="/blog/2016/05/29/emacschang-yong-ming-ling/">Emacs常用命令</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/05/15/ao-man-yu-pian-jian/">Pride and Prejudice</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/05/15/use-oracle-explain/">Use Oracle Explain</a>
       </li>
     
   </ul>

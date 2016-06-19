@@ -1,0 +1,1032 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Oracle中transform对hint的影响 - Yan Tingshuai's Blog</title>
+  <meta name="author" content="Yan Tingshuai">
+
+  
+  <meta name="description" content="Oracle中transform对指定hint的影响 对index hint的影响 没指定hint的情况 1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://yts1dx.github.io/blog/2016/06/19/oraclezhong-transformdui-hintde-ying-xiang/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Yan Tingshuai's Blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script> -->
+  <script src="//ajax.useso.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<!-- <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"> -->
+<!-- <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"> -->
+<link href="//fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Yan Tingshuai's Blog</a></h1>
+  
+    <h2>A Blog of SQLer.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.baidu.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="yts1dx.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Oracle中transform对hint的影响</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-06-19T20:56:39+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>19</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>8:56 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h1>Oracle中transform对指定hint的影响</h1>
+
+<h2>对index hint的影响</h2>
+
+<h3>没指定hint的情况</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">explain</span> <span class="n">plan</span> <span class="k">into</span> <span class="n">plan_table</span> <span class="k">for</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">t2</span> <span class="k">where</span> <span class="n">c1</span> <span class="o">&gt;</span> <span class="k">any</span> <span class="p">(</span><span class="k">select</span> <span class="n">c2</span> <span class="k">from</span> <span class="n">T3</span> <span class="k">where</span> <span class="n">c2</span> <span class="o">=</span> <span class="mi">1</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Explained</span><span class="p">.</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="k">table</span><span class="p">(</span><span class="n">dbms_xplan</span><span class="p">.</span><span class="n">display</span><span class="p">(</span><span class="s1">&#39;PLAN_TABLE&#39;</span><span class="p">,</span><span class="k">NULL</span><span class="p">,</span><span class="s1">&#39;OUTLINE&#39;</span><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">PLAN_TABLE_OUTPUT</span>
+</span><span class='line'><span class="c1">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="n">Plan</span> <span class="n">hash</span> <span class="n">value</span><span class="p">:</span> <span class="mi">2448468165</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">---------------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span> <span class="n">Id</span>  <span class="o">|</span> <span class="k">Operation</span>          <span class="o">|</span> <span class="n">Name</span>       <span class="o">|</span> <span class="k">Rows</span>  <span class="o">|</span> <span class="n">Bytes</span> <span class="o">|</span> <span class="n">Cost</span> <span class="p">(</span><span class="o">%</span><span class="n">CPU</span><span class="p">)</span><span class="o">|</span> <span class="n">Time</span>     <span class="o">|</span>
+</span><span class='line'><span class="c1">---------------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">0</span> <span class="o">|</span> <span class="k">SELECT</span> <span class="k">STATEMENT</span>       <span class="o">|</span>           <span class="o">|</span>      <span class="mi">1</span> <span class="o">|</span>     <span class="mi">29</span> <span class="o">|</span>      <span class="mi">0</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">1</span> <span class="o">|</span>  <span class="n">NESTED</span> <span class="n">LOOPS</span> <span class="n">SEMI</span>      <span class="o">|</span>           <span class="o">|</span>      <span class="mi">1</span> <span class="o">|</span>     <span class="mi">29</span> <span class="o">|</span>      <span class="mi">0</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">2</span> <span class="o">|</span>   <span class="k">TABLE</span> <span class="k">ACCESS</span> <span class="k">BY</span> <span class="k">INDEX</span> <span class="n">ROWID</span><span class="o">|</span> <span class="n">T2</span>      <span class="o">|</span>      <span class="mi">1</span> <span class="o">|</span>     <span class="mi">26</span> <span class="o">|</span>      <span class="mi">0</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|*</span>  <span class="mi">3</span> <span class="o">|</span>    <span class="k">INDEX</span> <span class="n">RANGE</span> <span class="n">SCAN</span>         <span class="o">|</span> <span class="n">SYS_C0012307</span> <span class="o">|</span>    <span class="mi">1</span> <span class="o">|</span>        <span class="o">|</span>      <span class="mi">0</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|*</span>  <span class="mi">4</span> <span class="o">|</span>   <span class="k">INDEX</span> <span class="n">RANGE</span> <span class="n">SCAN</span>      <span class="o">|</span> <span class="n">T3_IDX_1</span>     <span class="o">|</span>    <span class="mi">1</span> <span class="o">|</span>      <span class="mi">3</span> <span class="o">|</span>      <span class="mi">0</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="c1">---------------------------------------------------------------------------------------------</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Outline</span> <span class="k">Data</span>
+</span><span class='line'><span class="c1">-------------</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/*+</span>
+</span><span class='line'><span class="cm">      BEGIN_OUTLINE_DATA</span>
+</span><span class='line'><span class="cm">      USE_NL(@&quot;SEL$5DA710D3&quot; &quot;T3&quot;@&quot;SEL$2&quot;)</span>
+</span><span class='line'><span class="cm">      LEADING(@&quot;SEL$5DA710D3&quot; &quot;T2&quot;@&quot;SEL$1&quot; &quot;T3&quot;@&quot;SEL$2&quot;)</span>
+</span><span class='line'><span class="cm">      INDEX(@&quot;SEL$5DA710D3&quot; &quot;T3&quot;@&quot;SEL$2&quot; (&quot;T3&quot;.&quot;C2&quot;))</span>
+</span><span class='line'><span class="cm">      INDEX_RS_ASC(@&quot;SEL$5DA710D3&quot; &quot;T2&quot;@&quot;SEL$1&quot; (&quot;T2&quot;.&quot;C1&quot;))</span>
+</span><span class='line'><span class="cm">      OUTLINE(@&quot;SEL$2&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE(@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      UNNEST(@&quot;SEL$2&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE_LEAF(@&quot;SEL$5DA710D3&quot;)</span>
+</span><span class='line'><span class="cm">      ALL_ROWS</span>
+</span><span class='line'><span class="cm">      DB_VERSION(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      OPTIMIZER_FEATURES_ENABLE(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      IGNORE_OPTIM_EMBEDDED_HINTS</span>
+</span><span class='line'><span class="cm">      END_OUTLINE_DATA</span>
+</span><span class='line'><span class="cm">  */</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Predicate</span> <span class="n">Information</span> <span class="p">(</span><span class="n">identified</span> <span class="k">by</span> <span class="k">operation</span> <span class="n">id</span><span class="p">):</span>
+</span><span class='line'><span class="c1">---------------------------------------------------</span>
+</span><span class='line'>
+</span><span class='line'>   <span class="mi">3</span> <span class="o">-</span> <span class="k">access</span><span class="p">(</span><span class="ss">&quot;C1&quot;</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span>
+</span><span class='line'>   <span class="mi">4</span> <span class="o">-</span> <span class="k">access</span><span class="p">(</span><span class="ss">&quot;C2&quot;</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span><span class='line'>       <span class="n">filter</span><span class="p">(</span><span class="ss">&quot;C1&quot;</span><span class="o">&gt;</span><span class="ss">&quot;C2&quot;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="mi">38</span> <span class="k">rows</span> <span class="n">selected</span><span class="p">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>可见，在不一定hint的情况下对于t3表的访问，使用了T3_IDX_1索引；同时通过计划可知，消除了子查询生成了semi join。而且，user_nl/leading/index中qb_name都是transform之后的新值.</p>
+
+<h3>按照改写前的query block指定hint</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">explain</span> <span class="n">plan</span> <span class="k">into</span> <span class="n">plan_table</span> <span class="k">for</span> <span class="k">select</span> <span class="cm">/*+index(@&quot;SEL$2&quot; &quot;T3&quot;@&quot;SEL$2&quot; T3_IDX_2)*/</span><span class="o">*</span> <span class="k">from</span> <span class="n">t2</span> <span class="k">where</span> <span class="n">c1</span> <span class="o">&gt;</span> <span class="k">any</span> <span class="p">(</span><span class="k">select</span> <span class="n">c2</span> <span class="k">from</span> <span class="n">T3</span> <span class="k">where</span> <span class="n">c2</span> <span class="o">=</span> <span class="mi">1</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Explained</span><span class="p">.</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="k">table</span><span class="p">(</span><span class="n">dbms_xplan</span><span class="p">.</span><span class="n">display</span><span class="p">(</span><span class="s1">&#39;PLAN_TABLE&#39;</span><span class="p">,</span><span class="k">NULL</span><span class="p">,</span><span class="s1">&#39;OUTLINE&#39;</span><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">PLAN_TABLE_OUTPUT</span>
+</span><span class='line'><span class="c1">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="n">Plan</span> <span class="n">hash</span> <span class="n">value</span><span class="p">:</span> <span class="mi">2034984401</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">---------------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span> <span class="n">Id</span>  <span class="o">|</span> <span class="k">Operation</span>          <span class="o">|</span> <span class="n">Name</span>       <span class="o">|</span> <span class="k">Rows</span>  <span class="o">|</span> <span class="n">Bytes</span> <span class="o">|</span> <span class="n">Cost</span> <span class="p">(</span><span class="o">%</span><span class="n">CPU</span><span class="p">)</span><span class="o">|</span> <span class="n">Time</span>     <span class="o">|</span>
+</span><span class='line'><span class="c1">---------------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">0</span> <span class="o">|</span> <span class="k">SELECT</span> <span class="k">STATEMENT</span>       <span class="o">|</span>           <span class="o">|</span>      <span class="mi">1</span> <span class="o">|</span>     <span class="mi">29</span> <span class="o">|</span>      <span class="mi">1</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">1</span> <span class="o">|</span>  <span class="n">NESTED</span> <span class="n">LOOPS</span> <span class="n">SEMI</span>      <span class="o">|</span>           <span class="o">|</span>      <span class="mi">1</span> <span class="o">|</span>     <span class="mi">29</span> <span class="o">|</span>      <span class="mi">1</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">2</span> <span class="o">|</span>   <span class="k">TABLE</span> <span class="k">ACCESS</span> <span class="k">BY</span> <span class="k">INDEX</span> <span class="n">ROWID</span><span class="o">|</span> <span class="n">T2</span>      <span class="o">|</span>      <span class="mi">1</span> <span class="o">|</span>     <span class="mi">26</span> <span class="o">|</span>      <span class="mi">0</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|*</span>  <span class="mi">3</span> <span class="o">|</span>    <span class="k">INDEX</span> <span class="n">RANGE</span> <span class="n">SCAN</span>         <span class="o">|</span> <span class="n">SYS_C0012307</span> <span class="o">|</span>    <span class="mi">1</span> <span class="o">|</span>        <span class="o">|</span>      <span class="mi">0</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|*</span>  <span class="mi">4</span> <span class="o">|</span>   <span class="k">INDEX</span> <span class="n">RANGE</span> <span class="n">SCAN</span>      <span class="o">|</span> <span class="n">T3_IDX_2</span>     <span class="o">|</span>    <span class="mi">1</span> <span class="o">|</span>      <span class="mi">3</span> <span class="o">|</span>      <span class="mi">1</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="c1">---------------------------------------------------------------------------------------------</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Outline</span> <span class="k">Data</span>
+</span><span class='line'><span class="c1">-------------</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/*+</span>
+</span><span class='line'><span class="cm">      BEGIN_OUTLINE_DATA</span>
+</span><span class='line'><span class="cm">      USE_NL(@&quot;SEL$5DA710D3&quot; &quot;T3&quot;@&quot;SEL$2&quot;)</span>
+</span><span class='line'><span class="cm">      LEADING(@&quot;SEL$5DA710D3&quot; &quot;T2&quot;@&quot;SEL$1&quot; &quot;T3&quot;@&quot;SEL$2&quot;)</span>
+</span><span class='line'><span class="cm">      INDEX(@&quot;SEL$5DA710D3&quot; &quot;T3&quot;@&quot;SEL$2&quot; (&quot;T3&quot;.&quot;C2&quot; &quot;T3&quot;.&quot;C3&quot;))</span>
+</span><span class='line'><span class="cm">      INDEX_RS_ASC(@&quot;SEL$5DA710D3&quot; &quot;T2&quot;@&quot;SEL$1&quot; (&quot;T2&quot;.&quot;C1&quot;))</span>
+</span><span class='line'><span class="cm">      OUTLINE(@&quot;SEL$2&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE(@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      UNNEST(@&quot;SEL$2&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE_LEAF(@&quot;SEL$5DA710D3&quot;)</span>
+</span><span class='line'><span class="cm">      ALL_ROWS</span>
+</span><span class='line'><span class="cm">      DB_VERSION(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      OPTIMIZER_FEATURES_ENABLE(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      IGNORE_OPTIM_EMBEDDED_HINTS</span>
+</span><span class='line'><span class="cm">      END_OUTLINE_DATA</span>
+</span><span class='line'><span class="cm">  */</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Predicate</span> <span class="n">Information</span> <span class="p">(</span><span class="n">identified</span> <span class="k">by</span> <span class="k">operation</span> <span class="n">id</span><span class="p">):</span>
+</span><span class='line'><span class="c1">---------------------------------------------------</span>
+</span><span class='line'>
+</span><span class='line'>   <span class="mi">3</span> <span class="o">-</span> <span class="k">access</span><span class="p">(</span><span class="ss">&quot;C1&quot;</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span>
+</span><span class='line'>   <span class="mi">4</span> <span class="o">-</span> <span class="k">access</span><span class="p">(</span><span class="ss">&quot;C2&quot;</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span><span class='line'>       <span class="n">filter</span><span class="p">(</span><span class="ss">&quot;C1&quot;</span><span class="o">&gt;</span><span class="ss">&quot;C2&quot;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="mi">38</span> <span class="k">rows</span> <span class="n">selected</span><span class="p">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>hint中，指定的是改写前的qb_name &ldquo;SEL$2"，可见t3使用了T3_IDX_2，hint指定生效。</p>
+
+<h3>hint按照改写后的qb_name指定</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">explain</span> <span class="n">plan</span> <span class="k">into</span> <span class="n">plan_table</span> <span class="k">for</span> <span class="k">select</span> <span class="cm">/*+index(@&quot;SEL$5DA710D3&quot; &quot;T3&quot;@&quot;SEL$5DA710D3&quot; T3_IDX_2)*/</span><span class="o">*</span> <span class="k">from</span> <span class="n">t2</span> <span class="k">where</span> <span class="n">c1</span> <span class="o">&gt;</span> <span class="k">any</span> <span class="p">(</span><span class="k">select</span> <span class="n">c2</span> <span class="k">from</span> <span class="n">T3</span> <span class="k">where</span> <span class="n">c2</span> <span class="o">=</span> <span class="mi">1</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Explained</span><span class="p">.</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="k">table</span><span class="p">(</span><span class="n">dbms_xplan</span><span class="p">.</span><span class="n">display</span><span class="p">(</span><span class="s1">&#39;PLAN_TABLE&#39;</span><span class="p">,</span><span class="k">NULL</span><span class="p">,</span><span class="s1">&#39;OUTLINE&#39;</span><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">PLAN_TABLE_OUTPUT</span>
+</span><span class='line'><span class="c1">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="n">Plan</span> <span class="n">hash</span> <span class="n">value</span><span class="p">:</span> <span class="mi">2448468165</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">---------------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span> <span class="n">Id</span>  <span class="o">|</span> <span class="k">Operation</span>          <span class="o">|</span> <span class="n">Name</span>       <span class="o">|</span> <span class="k">Rows</span>  <span class="o">|</span> <span class="n">Bytes</span> <span class="o">|</span> <span class="n">Cost</span> <span class="p">(</span><span class="o">%</span><span class="n">CPU</span><span class="p">)</span><span class="o">|</span> <span class="n">Time</span>     <span class="o">|</span>
+</span><span class='line'><span class="c1">---------------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">0</span> <span class="o">|</span> <span class="k">SELECT</span> <span class="k">STATEMENT</span>       <span class="o">|</span>           <span class="o">|</span>      <span class="mi">1</span> <span class="o">|</span>     <span class="mi">29</span> <span class="o">|</span>      <span class="mi">0</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">1</span> <span class="o">|</span>  <span class="n">NESTED</span> <span class="n">LOOPS</span> <span class="n">SEMI</span>      <span class="o">|</span>           <span class="o">|</span>      <span class="mi">1</span> <span class="o">|</span>     <span class="mi">29</span> <span class="o">|</span>      <span class="mi">0</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">2</span> <span class="o">|</span>   <span class="k">TABLE</span> <span class="k">ACCESS</span> <span class="k">BY</span> <span class="k">INDEX</span> <span class="n">ROWID</span><span class="o">|</span> <span class="n">T2</span>      <span class="o">|</span>      <span class="mi">1</span> <span class="o">|</span>     <span class="mi">26</span> <span class="o">|</span>      <span class="mi">0</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|*</span>  <span class="mi">3</span> <span class="o">|</span>    <span class="k">INDEX</span> <span class="n">RANGE</span> <span class="n">SCAN</span>         <span class="o">|</span> <span class="n">SYS_C0012307</span> <span class="o">|</span>    <span class="mi">1</span> <span class="o">|</span>        <span class="o">|</span>      <span class="mi">0</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|*</span>  <span class="mi">4</span> <span class="o">|</span>   <span class="k">INDEX</span> <span class="n">RANGE</span> <span class="n">SCAN</span>      <span class="o">|</span> <span class="n">T3_IDX_1</span>     <span class="o">|</span>    <span class="mi">1</span> <span class="o">|</span>      <span class="mi">3</span> <span class="o">|</span>      <span class="mi">0</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="c1">---------------------------------------------------------------------------------------------</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Outline</span> <span class="k">Data</span>
+</span><span class='line'><span class="c1">-------------</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/*+</span>
+</span><span class='line'><span class="cm">      BEGIN_OUTLINE_DATA</span>
+</span><span class='line'><span class="cm">      USE_NL(@&quot;SEL$5DA710D3&quot; &quot;T3&quot;@&quot;SEL$2&quot;)</span>
+</span><span class='line'><span class="cm">      LEADING(@&quot;SEL$5DA710D3&quot; &quot;T2&quot;@&quot;SEL$1&quot; &quot;T3&quot;@&quot;SEL$2&quot;)</span>
+</span><span class='line'><span class="cm">      INDEX(@&quot;SEL$5DA710D3&quot; &quot;T3&quot;@&quot;SEL$2&quot; (&quot;T3&quot;.&quot;C2&quot;))</span>
+</span><span class='line'><span class="cm">      INDEX_RS_ASC(@&quot;SEL$5DA710D3&quot; &quot;T2&quot;@&quot;SEL$1&quot; (&quot;T2&quot;.&quot;C1&quot;))</span>
+</span><span class='line'><span class="cm">      OUTLINE(@&quot;SEL$2&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE(@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      UNNEST(@&quot;SEL$2&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE_LEAF(@&quot;SEL$5DA710D3&quot;)</span>
+</span><span class='line'><span class="cm">      ALL_ROWS</span>
+</span><span class='line'><span class="cm">      DB_VERSION(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      OPTIMIZER_FEATURES_ENABLE(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      IGNORE_OPTIM_EMBEDDED_HINTS</span>
+</span><span class='line'><span class="cm">      END_OUTLINE_DATA</span>
+</span><span class='line'><span class="cm">  */</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Predicate</span> <span class="n">Information</span> <span class="p">(</span><span class="n">identified</span> <span class="k">by</span> <span class="k">operation</span> <span class="n">id</span><span class="p">):</span>
+</span><span class='line'><span class="c1">---------------------------------------------------</span>
+</span><span class='line'>
+</span><span class='line'>   <span class="mi">3</span> <span class="o">-</span> <span class="k">access</span><span class="p">(</span><span class="ss">&quot;C1&quot;</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span>
+</span><span class='line'>   <span class="mi">4</span> <span class="o">-</span> <span class="k">access</span><span class="p">(</span><span class="ss">&quot;C2&quot;</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span><span class='line'>       <span class="n">filter</span><span class="p">(</span><span class="ss">&quot;C1&quot;</span><span class="o">&gt;</span><span class="ss">&quot;C2&quot;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="mi">38</span> <span class="k">rows</span> <span class="n">selected</span><span class="p">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>总结</h3>
+
+<p>通过对不同位置的qb_name更改，可以生效的形式为:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">explain</span> <span class="n">plan</span> <span class="k">into</span> <span class="n">plan_table</span> <span class="k">for</span> <span class="k">select</span> <span class="cm">/*+index(@&quot;SEL$2&quot; &quot;T3&quot;@&quot;SEL$2&quot; T3_IDX_2)*/</span><span class="o">*</span> <span class="k">from</span> <span class="n">t2</span> <span class="k">where</span> <span class="n">c1</span> <span class="o">&gt;</span> <span class="k">any</span> <span class="p">(</span><span class="k">select</span> <span class="n">c2</span> <span class="k">from</span> <span class="n">T3</span> <span class="k">where</span> <span class="n">c2</span> <span class="o">=</span> <span class="mi">1</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">explain</span> <span class="n">plan</span> <span class="k">into</span> <span class="n">plan_table</span> <span class="k">for</span> <span class="k">select</span> <span class="cm">/*+index(@&quot;SEL$5DA710D3&quot; &quot;T3&quot;@&quot;SEL$2&quot; T3_IDX_2)*/</span><span class="o">*</span> <span class="k">from</span> <span class="n">t2</span> <span class="k">where</span> <span class="n">c1</span> <span class="o">&gt;</span> <span class="k">any</span> <span class="p">(</span><span class="k">select</span> <span class="n">c2</span> <span class="k">from</span> <span class="n">T3</span> <span class="k">where</span> <span class="n">c2</span> <span class="o">=</span> <span class="mi">1</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>无效的qb_name指定形式为：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">explain</span> <span class="n">plan</span> <span class="k">into</span> <span class="n">plan_table</span> <span class="k">for</span> <span class="k">select</span> <span class="cm">/*+index(@&quot;SEL$1&quot; &quot;T3&quot;@&quot;SEL$2&quot; T3_IDX_2)*/</span><span class="o">*</span> <span class="k">from</span> <span class="n">t2</span> <span class="k">where</span> <span class="n">c1</span> <span class="o">&gt;</span> <span class="k">any</span> <span class="p">(</span><span class="k">select</span> <span class="n">c2</span> <span class="k">from</span> <span class="n">T3</span> <span class="k">where</span> <span class="n">c2</span> <span class="o">=</span> <span class="mi">1</span><span class="p">);</span>
+</span><span class='line'><span class="k">explain</span> <span class="n">plan</span> <span class="k">into</span> <span class="n">plan_table</span> <span class="k">for</span> <span class="k">select</span> <span class="cm">/*+index(@&quot;SEL$5DA710D3&quot; &quot;T3&quot;@&quot;SEL$5DA710D3&quot; T3_IDX_2)*/</span><span class="o">*</span> <span class="k">from</span> <span class="n">t2</span> <span class="k">where</span> <span class="n">c1</span> <span class="o">&gt;</span> <span class="k">any</span> <span class="p">(</span><span class="k">select</span> <span class="n">c2</span> <span class="k">from</span> <span class="n">T3</span> <span class="k">where</span> <span class="n">c2</span> <span class="o">=</span> <span class="mi">1</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>结论：在index hint面对transform时，如果想生效，需要满足两个条件：
+1. table后面的qb_name必须是transform之前的qb_name
+2. 整个index所指定的qb_name可以是改写之前的(本例中：SEL\$2)，也可以是改写之后由系统生成的(本例中：SEL\$5DA710D3)，但不可以是改写前外层的(本例中：SEL\$1)</p>
+
+<h2>对leading hint的影响</h2>
+
+<h3>没指定hint的情况</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">explain</span> <span class="n">plan</span> <span class="k">into</span> <span class="n">plan_table</span> <span class="k">for</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">t1</span> <span class="k">where</span> <span class="n">c1</span> <span class="o">&gt;</span> <span class="k">any</span> <span class="p">(</span><span class="k">select</span> <span class="n">c2</span> <span class="k">from</span> <span class="p">(</span><span class="k">select</span> <span class="k">max</span><span class="p">(</span><span class="n">t2</span><span class="p">.</span><span class="n">c2</span><span class="p">)</span> <span class="k">from</span> <span class="n">t2</span><span class="p">,</span><span class="n">t3</span> <span class="k">group</span> <span class="k">by</span> <span class="n">t2</span><span class="p">.</span><span class="n">c1</span><span class="p">)</span> <span class="n">tt</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Explained</span><span class="p">.</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="k">table</span><span class="p">(</span><span class="n">dbms_xplan</span><span class="p">.</span><span class="n">display</span><span class="p">(</span><span class="s1">&#39;PLAN_TABLE&#39;</span><span class="p">,</span><span class="k">NULL</span><span class="p">,</span><span class="s1">&#39;OUTLINE&#39;</span><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">PLAN_TABLE_OUTPUT</span>
+</span><span class='line'><span class="c1">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="n">Plan</span> <span class="n">hash</span> <span class="n">value</span><span class="p">:</span> <span class="mi">3676677615</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">----------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span> <span class="n">Id</span>  <span class="o">|</span> <span class="k">Operation</span>     <span class="o">|</span> <span class="n">Name</span>           <span class="o">|</span> <span class="k">Rows</span>  <span class="o">|</span> <span class="n">Bytes</span> <span class="o">|</span> <span class="n">Cost</span> <span class="p">(</span><span class="o">%</span><span class="n">CPU</span><span class="p">)</span><span class="o">|</span> <span class="n">Time</span>     <span class="o">|</span>
+</span><span class='line'><span class="c1">----------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">0</span> <span class="o">|</span> <span class="k">SELECT</span> <span class="k">STATEMENT</span>  <span class="o">|</span>           <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">26</span> <span class="o">|</span>     <span class="mi">5</span> <span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|*</span>  <span class="mi">1</span> <span class="o">|</span>  <span class="n">FILTER</span>      <span class="o">|</span>           <span class="o">|</span>       <span class="o">|</span>       <span class="o">|</span>       <span class="o">|</span>           <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">2</span> <span class="o">|</span>   <span class="k">TABLE</span> <span class="k">ACCESS</span> <span class="k">FULL</span>    <span class="o">|</span> <span class="n">T1</span>         <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">26</span> <span class="o">|</span>     <span class="mi">2</span>  <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|*</span>  <span class="mi">3</span> <span class="o">|</span>   <span class="n">FILTER</span>     <span class="o">|</span>           <span class="o">|</span>       <span class="o">|</span>       <span class="o">|</span>       <span class="o">|</span>           <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">4</span> <span class="o">|</span>    <span class="n">HASH</span> <span class="k">GROUP</span> <span class="k">BY</span>   <span class="o">|</span>           <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">13</span> <span class="o">|</span>     <span class="mi">3</span> <span class="p">(</span><span class="mi">34</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">5</span> <span class="o">|</span>     <span class="n">MERGE</span> <span class="k">JOIN</span> <span class="n">CARTESIAN</span><span class="o">|</span>          <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">13</span> <span class="o">|</span>     <span class="mi">2</span>  <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">6</span> <span class="o">|</span>      <span class="k">INDEX</span> <span class="k">FULL</span> <span class="n">SCAN</span>   <span class="o">|</span> <span class="n">SYS_C0012307</span> <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">13</span> <span class="o">|</span>     <span class="mi">0</span>    <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">7</span> <span class="o">|</span>      <span class="n">BUFFER</span> <span class="n">SORT</span>  <span class="o">|</span>           <span class="o">|</span>     <span class="mi">3</span> <span class="o">|</span>       <span class="o">|</span>     <span class="mi">3</span> <span class="p">(</span><span class="mi">34</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">8</span> <span class="o">|</span>       <span class="k">TABLE</span> <span class="k">ACCESS</span> <span class="k">FULL</span> <span class="o">|</span> <span class="n">T3</span>        <span class="o">|</span>     <span class="mi">3</span> <span class="o">|</span>       <span class="o">|</span>     <span class="mi">2</span>  <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="c1">----------------------------------------------------------------------------------------</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Outline</span> <span class="k">Data</span>
+</span><span class='line'><span class="c1">-------------</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/*+</span>
+</span><span class='line'><span class="cm">      BEGIN_OUTLINE_DATA</span>
+</span><span class='line'><span class="cm">      USE_HASH_AGGREGATION(@&quot;SEL$335DD26A&quot;)</span>
+</span><span class='line'><span class="cm">      USE_MERGE_CARTESIAN(@&quot;SEL$335DD26A&quot; &quot;T3&quot;@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      LEADING(@&quot;SEL$335DD26A&quot; &quot;T2&quot;@&quot;SEL$3&quot; &quot;T3&quot;@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      FULL(@&quot;SEL$335DD26A&quot; &quot;T3&quot;@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      INDEX(@&quot;SEL$335DD26A&quot; &quot;T2&quot;@&quot;SEL$3&quot; (&quot;T2&quot;.&quot;C1&quot;))</span>
+</span><span class='line'><span class="cm">      FULL(@&quot;SEL$1&quot; &quot;T1&quot;@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE(@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE(@&quot;SEL$2&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE_LEAF(@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      MERGE(@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE_LEAF(@&quot;SEL$335DD26A&quot;)</span>
+</span><span class='line'><span class="cm">      ALL_ROWS</span>
+</span><span class='line'><span class="cm">      DB_VERSION(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      OPTIMIZER_FEATURES_ENABLE(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      IGNORE_OPTIM_EMBEDDED_HINTS</span>
+</span><span class='line'><span class="cm">      END_OUTLINE_DATA</span>
+</span><span class='line'><span class="cm">  */</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Predicate</span> <span class="n">Information</span> <span class="p">(</span><span class="n">identified</span> <span class="k">by</span> <span class="k">operation</span> <span class="n">id</span><span class="p">):</span>
+</span><span class='line'><span class="c1">---------------------------------------------------</span>
+</span><span class='line'>
+</span><span class='line'>   <span class="mi">1</span> <span class="o">-</span> <span class="n">filter</span><span class="p">(</span> <span class="k">EXISTS</span> <span class="p">(</span><span class="k">SELECT</span> <span class="mi">0</span> <span class="k">FROM</span> <span class="ss">&quot;T3&quot;</span> <span class="ss">&quot;T3&quot;</span><span class="p">,</span><span class="ss">&quot;T2&quot;</span> <span class="ss">&quot;T2&quot;</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="ss">&quot;T2&quot;</span><span class="p">.</span><span class="ss">&quot;C1&quot;</span><span class="p">,:</span><span class="n">B1</span>
+</span><span class='line'>        <span class="k">HAVING</span> <span class="p">:</span><span class="n">B2</span><span class="o">&gt;</span><span class="p">:</span><span class="n">B3</span><span class="p">))</span>
+</span><span class='line'>   <span class="mi">3</span> <span class="o">-</span> <span class="n">filter</span><span class="p">(:</span><span class="n">B1</span><span class="o">&gt;</span><span class="p">:</span><span class="n">B2</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="mi">45</span> <span class="k">rows</span> <span class="n">selected</span><span class="p">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>由outline的内容可知，在没有指定hint的情况下，join的顺序为t2,t3</p>
+
+<h3>对leading指定改写前的qb_name</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">explain</span> <span class="n">plan</span> <span class="k">into</span> <span class="n">plan_table</span> <span class="k">for</span> <span class="k">select</span> <span class="cm">/*+LEADING(@&quot;SEL$3&quot; &quot;T3&quot;@&quot;SEL$3&quot; &quot;T2&quot;@&quot;SEL$3&quot;)*/</span><span class="o">*</span> <span class="k">from</span> <span class="n">t1</span> <span class="k">where</span> <span class="n">c1</span> <span class="o">&gt;</span> <span class="k">any</span> <span class="p">(</span><span class="k">select</span> <span class="n">c2</span> <span class="k">from</span> <span class="p">(</span><span class="k">select</span> <span class="k">max</span><span class="p">(</span><span class="n">t2</span><span class="p">.</span><span class="n">c2</span><span class="p">)</span> <span class="k">from</span> <span class="n">t2</span><span class="p">,</span><span class="n">t3</span> <span class="k">group</span> <span class="k">by</span> <span class="n">t2</span><span class="p">.</span><span class="n">c1</span><span class="p">)</span> <span class="n">tt</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Explained</span><span class="p">.</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="k">table</span><span class="p">(</span><span class="n">dbms_xplan</span><span class="p">.</span><span class="n">display</span><span class="p">(</span><span class="s1">&#39;PLAN_TABLE&#39;</span><span class="p">,</span><span class="k">NULL</span><span class="p">,</span><span class="s1">&#39;OUTLINE&#39;</span><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">PLAN_TABLE_OUTPUT</span>
+</span><span class='line'><span class="c1">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="n">Plan</span> <span class="n">hash</span> <span class="n">value</span><span class="p">:</span> <span class="mi">3161554821</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">----------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span> <span class="n">Id</span>  <span class="o">|</span> <span class="k">Operation</span>     <span class="o">|</span> <span class="n">Name</span>           <span class="o">|</span> <span class="k">Rows</span>  <span class="o">|</span> <span class="n">Bytes</span> <span class="o">|</span> <span class="n">Cost</span> <span class="p">(</span><span class="o">%</span><span class="n">CPU</span><span class="p">)</span><span class="o">|</span> <span class="n">Time</span>     <span class="o">|</span>
+</span><span class='line'><span class="c1">----------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">0</span> <span class="o">|</span> <span class="k">SELECT</span> <span class="k">STATEMENT</span>  <span class="o">|</span>           <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">26</span> <span class="o">|</span>     <span class="mi">5</span> <span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|*</span>  <span class="mi">1</span> <span class="o">|</span>  <span class="n">FILTER</span>      <span class="o">|</span>           <span class="o">|</span>       <span class="o">|</span>       <span class="o">|</span>       <span class="o">|</span>           <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">2</span> <span class="o">|</span>   <span class="k">TABLE</span> <span class="k">ACCESS</span> <span class="k">FULL</span>    <span class="o">|</span> <span class="n">T1</span>         <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">26</span> <span class="o">|</span>     <span class="mi">2</span>  <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|*</span>  <span class="mi">3</span> <span class="o">|</span>   <span class="n">FILTER</span>     <span class="o">|</span>           <span class="o">|</span>       <span class="o">|</span>       <span class="o">|</span>       <span class="o">|</span>           <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">4</span> <span class="o">|</span>    <span class="n">HASH</span> <span class="k">GROUP</span> <span class="k">BY</span>   <span class="o">|</span>           <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">13</span> <span class="o">|</span>     <span class="mi">3</span> <span class="p">(</span><span class="mi">34</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">5</span> <span class="o">|</span>     <span class="n">MERGE</span> <span class="k">JOIN</span> <span class="n">CARTESIAN</span><span class="o">|</span>          <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">13</span> <span class="o">|</span>     <span class="mi">2</span>  <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">6</span> <span class="o">|</span>      <span class="k">TABLE</span> <span class="k">ACCESS</span> <span class="k">FULL</span> <span class="o">|</span> <span class="n">T3</span>         <span class="o">|</span>     <span class="mi">3</span> <span class="o">|</span>       <span class="o">|</span>     <span class="mi">2</span>  <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">7</span> <span class="o">|</span>      <span class="n">BUFFER</span> <span class="n">SORT</span>  <span class="o">|</span>           <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">13</span> <span class="o">|</span>     <span class="mi">1</span> <span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">8</span> <span class="o">|</span>       <span class="k">INDEX</span> <span class="k">FULL</span> <span class="n">SCAN</span>  <span class="o">|</span> <span class="n">SYS_C0012307</span> <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">13</span> <span class="o">|</span>     <span class="mi">0</span>    <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="c1">----------------------------------------------------------------------------------------</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Outline</span> <span class="k">Data</span>
+</span><span class='line'><span class="c1">-------------</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/*+</span>
+</span><span class='line'><span class="cm">      BEGIN_OUTLINE_DATA</span>
+</span><span class='line'><span class="cm">      USE_HASH_AGGREGATION(@&quot;SEL$335DD26A&quot;)</span>
+</span><span class='line'><span class="cm">      USE_MERGE_CARTESIAN(@&quot;SEL$335DD26A&quot; &quot;T2&quot;@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      LEADING(@&quot;SEL$335DD26A&quot; &quot;T3&quot;@&quot;SEL$3&quot; &quot;T2&quot;@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      INDEX(@&quot;SEL$335DD26A&quot; &quot;T2&quot;@&quot;SEL$3&quot; (&quot;T2&quot;.&quot;C1&quot;))</span>
+</span><span class='line'><span class="cm">      FULL(@&quot;SEL$335DD26A&quot; &quot;T3&quot;@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      FULL(@&quot;SEL$1&quot; &quot;T1&quot;@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE(@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE(@&quot;SEL$2&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE_LEAF(@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      MERGE(@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE_LEAF(@&quot;SEL$335DD26A&quot;)</span>
+</span><span class='line'><span class="cm">      ALL_ROWS</span>
+</span><span class='line'><span class="cm">      DB_VERSION(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      OPTIMIZER_FEATURES_ENABLE(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      IGNORE_OPTIM_EMBEDDED_HINTS</span>
+</span><span class='line'><span class="cm">      END_OUTLINE_DATA</span>
+</span><span class='line'><span class="cm">  */</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Predicate</span> <span class="n">Information</span> <span class="p">(</span><span class="n">identified</span> <span class="k">by</span> <span class="k">operation</span> <span class="n">id</span><span class="p">):</span>
+</span><span class='line'><span class="c1">---------------------------------------------------</span>
+</span><span class='line'>
+</span><span class='line'>   <span class="mi">1</span> <span class="o">-</span> <span class="n">filter</span><span class="p">(</span> <span class="k">EXISTS</span> <span class="p">(</span><span class="k">SELECT</span> <span class="cm">/*+ LEADING (&quot;T3&quot; &quot;T2&quot;) */</span> <span class="mi">0</span> <span class="k">FROM</span> <span class="ss">&quot;T3&quot;</span> <span class="ss">&quot;T3&quot;</span><span class="p">,</span><span class="ss">&quot;T2&quot;</span>
+</span><span class='line'>        <span class="ss">&quot;T2&quot;</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="ss">&quot;T2&quot;</span><span class="p">.</span><span class="ss">&quot;C1&quot;</span><span class="p">,:</span><span class="n">B1</span> <span class="k">HAVING</span> <span class="p">:</span><span class="n">B2</span><span class="o">&gt;</span><span class="p">:</span><span class="n">B3</span><span class="p">))</span>
+</span><span class='line'>   <span class="mi">3</span> <span class="o">-</span> <span class="n">filter</span><span class="p">(:</span><span class="n">B1</span><span class="o">&gt;</span><span class="p">:</span><span class="n">B2</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="mi">45</span> <span class="k">rows</span> <span class="n">selected</span><span class="p">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>可见当指定/*+LEADING(@&ldquo;SEL$3&rdquo; &ldquo;T3&rdquo;@&ldquo;SEL$3&rdquo; &ldquo;T2&rdquo;@&ldquo;SEL$3&rdquo;)*/时，hint生效，join的顺序变为t3,t2</p>
+
+<h3>对leading指定改写后的qb_name</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">explain</span> <span class="n">plan</span> <span class="k">into</span> <span class="n">plan_table</span> <span class="k">for</span> <span class="k">select</span> <span class="cm">/*+LEADING(@&quot;SEL$335DD26A&quot; &quot;T3&quot;@&quot;SEL$3&quot; &quot;T2&quot;@&quot;SEL$3&quot;)*/</span><span class="o">*</span> <span class="k">from</span> <span class="n">t1</span> <span class="k">where</span> <span class="n">c1</span> <span class="o">&gt;</span> <span class="k">any</span> <span class="p">(</span><span class="k">select</span> <span class="n">c2</span> <span class="k">from</span> <span class="p">(</span><span class="k">select</span> <span class="k">max</span><span class="p">(</span><span class="n">t2</span><span class="p">.</span><span class="n">c2</span><span class="p">)</span> <span class="k">from</span> <span class="n">t2</span><span class="p">,</span><span class="n">t3</span> <span class="k">group</span> <span class="k">by</span> <span class="n">t2</span><span class="p">.</span><span class="n">c1</span><span class="p">)</span> <span class="n">tt</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Explained</span><span class="p">.</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="k">table</span><span class="p">(</span><span class="n">dbms_xplan</span><span class="p">.</span><span class="n">display</span><span class="p">(</span><span class="s1">&#39;PLAN_TABLE&#39;</span><span class="p">,</span><span class="k">NULL</span><span class="p">,</span><span class="s1">&#39;OUTLINE&#39;</span><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">PLAN_TABLE_OUTPUT</span>
+</span><span class='line'><span class="c1">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="n">Plan</span> <span class="n">hash</span> <span class="n">value</span><span class="p">:</span> <span class="mi">3161554821</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">----------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span> <span class="n">Id</span>  <span class="o">|</span> <span class="k">Operation</span>     <span class="o">|</span> <span class="n">Name</span>           <span class="o">|</span> <span class="k">Rows</span>  <span class="o">|</span> <span class="n">Bytes</span> <span class="o">|</span> <span class="n">Cost</span> <span class="p">(</span><span class="o">%</span><span class="n">CPU</span><span class="p">)</span><span class="o">|</span> <span class="n">Time</span>     <span class="o">|</span>
+</span><span class='line'><span class="c1">----------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">0</span> <span class="o">|</span> <span class="k">SELECT</span> <span class="k">STATEMENT</span>  <span class="o">|</span>           <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">26</span> <span class="o">|</span>     <span class="mi">5</span> <span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|*</span>  <span class="mi">1</span> <span class="o">|</span>  <span class="n">FILTER</span>      <span class="o">|</span>           <span class="o">|</span>       <span class="o">|</span>       <span class="o">|</span>       <span class="o">|</span>           <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">2</span> <span class="o">|</span>   <span class="k">TABLE</span> <span class="k">ACCESS</span> <span class="k">FULL</span>    <span class="o">|</span> <span class="n">T1</span>         <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">26</span> <span class="o">|</span>     <span class="mi">2</span>  <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|*</span>  <span class="mi">3</span> <span class="o">|</span>   <span class="n">FILTER</span>     <span class="o">|</span>           <span class="o">|</span>       <span class="o">|</span>       <span class="o">|</span>       <span class="o">|</span>           <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">4</span> <span class="o">|</span>    <span class="n">HASH</span> <span class="k">GROUP</span> <span class="k">BY</span>   <span class="o">|</span>           <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">13</span> <span class="o">|</span>     <span class="mi">3</span> <span class="p">(</span><span class="mi">34</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">5</span> <span class="o">|</span>     <span class="n">MERGE</span> <span class="k">JOIN</span> <span class="n">CARTESIAN</span><span class="o">|</span>          <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">13</span> <span class="o">|</span>     <span class="mi">2</span>  <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">6</span> <span class="o">|</span>      <span class="k">TABLE</span> <span class="k">ACCESS</span> <span class="k">FULL</span> <span class="o">|</span> <span class="n">T3</span>         <span class="o">|</span>     <span class="mi">3</span> <span class="o">|</span>       <span class="o">|</span>     <span class="mi">2</span>  <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">7</span> <span class="o">|</span>      <span class="n">BUFFER</span> <span class="n">SORT</span>  <span class="o">|</span>           <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">13</span> <span class="o">|</span>     <span class="mi">1</span> <span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">8</span> <span class="o">|</span>       <span class="k">INDEX</span> <span class="k">FULL</span> <span class="n">SCAN</span>  <span class="o">|</span> <span class="n">SYS_C0012307</span> <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">13</span> <span class="o">|</span>     <span class="mi">0</span>    <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="c1">----------------------------------------------------------------------------------------</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Outline</span> <span class="k">Data</span>
+</span><span class='line'><span class="c1">-------------</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/*+</span>
+</span><span class='line'><span class="cm">      BEGIN_OUTLINE_DATA</span>
+</span><span class='line'><span class="cm">      USE_HASH_AGGREGATION(@&quot;SEL$335DD26A&quot;)</span>
+</span><span class='line'><span class="cm">      USE_MERGE_CARTESIAN(@&quot;SEL$335DD26A&quot; &quot;T2&quot;@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      LEADING(@&quot;SEL$335DD26A&quot; &quot;T3&quot;@&quot;SEL$3&quot; &quot;T2&quot;@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      INDEX(@&quot;SEL$335DD26A&quot; &quot;T2&quot;@&quot;SEL$3&quot; (&quot;T2&quot;.&quot;C1&quot;))</span>
+</span><span class='line'><span class="cm">      FULL(@&quot;SEL$335DD26A&quot; &quot;T3&quot;@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      FULL(@&quot;SEL$1&quot; &quot;T1&quot;@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE(@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE(@&quot;SEL$2&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE_LEAF(@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      MERGE(@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE_LEAF(@&quot;SEL$335DD26A&quot;)</span>
+</span><span class='line'><span class="cm">      ALL_ROWS</span>
+</span><span class='line'><span class="cm">      DB_VERSION(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      OPTIMIZER_FEATURES_ENABLE(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      IGNORE_OPTIM_EMBEDDED_HINTS</span>
+</span><span class='line'><span class="cm">      END_OUTLINE_DATA</span>
+</span><span class='line'><span class="cm">  */</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Predicate</span> <span class="n">Information</span> <span class="p">(</span><span class="n">identified</span> <span class="k">by</span> <span class="k">operation</span> <span class="n">id</span><span class="p">):</span>
+</span><span class='line'><span class="c1">---------------------------------------------------</span>
+</span><span class='line'>
+</span><span class='line'>   <span class="mi">1</span> <span class="o">-</span> <span class="n">filter</span><span class="p">(</span> <span class="k">EXISTS</span> <span class="p">(</span><span class="k">SELECT</span> <span class="cm">/*+ LEADING (&quot;T3&quot; &quot;T2&quot;) */</span> <span class="mi">0</span> <span class="k">FROM</span> <span class="ss">&quot;T3&quot;</span> <span class="ss">&quot;T3&quot;</span><span class="p">,</span><span class="ss">&quot;T2&quot;</span>
+</span><span class='line'>        <span class="ss">&quot;T2&quot;</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="ss">&quot;T2&quot;</span><span class="p">.</span><span class="ss">&quot;C1&quot;</span><span class="p">,:</span><span class="n">B1</span> <span class="k">HAVING</span> <span class="p">:</span><span class="n">B2</span><span class="o">&gt;</span><span class="p">:</span><span class="n">B3</span><span class="p">))</span>
+</span><span class='line'>   <span class="mi">3</span> <span class="o">-</span> <span class="n">filter</span><span class="p">(:</span><span class="n">B1</span><span class="o">&gt;</span><span class="p">:</span><span class="n">B2</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="mi">45</span> <span class="k">rows</span> <span class="n">selected</span><span class="p">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>可见当指定/*+LEADING(@&ldquo;SEL$335DD26A&rdquo; &ldquo;T3&rdquo;@&ldquo;SEL$3&rdquo; &ldquo;T2&rdquo;@&ldquo;SEL$3&rdquo;)*/时，hint生效，join的顺序变为t3,t2</p>
+
+<h3>对leading指定改写前上层的qb_name</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="k">table</span><span class="p">(</span><span class="n">dbms_xplan</span><span class="p">.</span><span class="n">display</span><span class="p">(</span><span class="s1">&#39;PLAN_TABLE&#39;</span><span class="p">,</span><span class="k">NULL</span><span class="p">,</span><span class="s1">&#39;OUTLINE&#39;</span><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">PLAN_TABLE_OUTPUT</span>
+</span><span class='line'><span class="c1">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="n">Plan</span> <span class="n">hash</span> <span class="n">value</span><span class="p">:</span> <span class="mi">3676677615</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">----------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span> <span class="n">Id</span>  <span class="o">|</span> <span class="k">Operation</span>     <span class="o">|</span> <span class="n">Name</span>           <span class="o">|</span> <span class="k">Rows</span>  <span class="o">|</span> <span class="n">Bytes</span> <span class="o">|</span> <span class="n">Cost</span> <span class="p">(</span><span class="o">%</span><span class="n">CPU</span><span class="p">)</span><span class="o">|</span> <span class="n">Time</span>     <span class="o">|</span>
+</span><span class='line'><span class="c1">----------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">0</span> <span class="o">|</span> <span class="k">SELECT</span> <span class="k">STATEMENT</span>  <span class="o">|</span>           <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">26</span> <span class="o">|</span>     <span class="mi">5</span> <span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|*</span>  <span class="mi">1</span> <span class="o">|</span>  <span class="n">FILTER</span>      <span class="o">|</span>           <span class="o">|</span>       <span class="o">|</span>       <span class="o">|</span>       <span class="o">|</span>           <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">2</span> <span class="o">|</span>   <span class="k">TABLE</span> <span class="k">ACCESS</span> <span class="k">FULL</span>    <span class="o">|</span> <span class="n">T1</span>         <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">26</span> <span class="o">|</span>     <span class="mi">2</span>  <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|*</span>  <span class="mi">3</span> <span class="o">|</span>   <span class="n">FILTER</span>     <span class="o">|</span>           <span class="o">|</span>       <span class="o">|</span>       <span class="o">|</span>       <span class="o">|</span>           <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">4</span> <span class="o">|</span>    <span class="n">HASH</span> <span class="k">GROUP</span> <span class="k">BY</span>   <span class="o">|</span>           <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">13</span> <span class="o">|</span>     <span class="mi">3</span> <span class="p">(</span><span class="mi">34</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">5</span> <span class="o">|</span>     <span class="n">MERGE</span> <span class="k">JOIN</span> <span class="n">CARTESIAN</span><span class="o">|</span>          <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">13</span> <span class="o">|</span>     <span class="mi">2</span>  <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">6</span> <span class="o">|</span>      <span class="k">INDEX</span> <span class="k">FULL</span> <span class="n">SCAN</span>   <span class="o">|</span> <span class="n">SYS_C0012307</span> <span class="o">|</span>     <span class="mi">1</span> <span class="o">|</span>    <span class="mi">13</span> <span class="o">|</span>     <span class="mi">0</span>    <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">7</span> <span class="o">|</span>      <span class="n">BUFFER</span> <span class="n">SORT</span>  <span class="o">|</span>           <span class="o">|</span>     <span class="mi">3</span> <span class="o">|</span>       <span class="o">|</span>     <span class="mi">3</span> <span class="p">(</span><span class="mi">34</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">8</span> <span class="o">|</span>       <span class="k">TABLE</span> <span class="k">ACCESS</span> <span class="k">FULL</span> <span class="o">|</span> <span class="n">T3</span>        <span class="o">|</span>     <span class="mi">3</span> <span class="o">|</span>       <span class="o">|</span>     <span class="mi">2</span>  <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="c1">----------------------------------------------------------------------------------------</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Outline</span> <span class="k">Data</span>
+</span><span class='line'><span class="c1">-------------</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/*+</span>
+</span><span class='line'><span class="cm">      BEGIN_OUTLINE_DATA</span>
+</span><span class='line'><span class="cm">      USE_HASH_AGGREGATION(@&quot;SEL$335DD26A&quot;)</span>
+</span><span class='line'><span class="cm">      USE_MERGE_CARTESIAN(@&quot;SEL$335DD26A&quot; &quot;T3&quot;@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      LEADING(@&quot;SEL$335DD26A&quot; &quot;T2&quot;@&quot;SEL$3&quot; &quot;T3&quot;@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      FULL(@&quot;SEL$335DD26A&quot; &quot;T3&quot;@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      INDEX(@&quot;SEL$335DD26A&quot; &quot;T2&quot;@&quot;SEL$3&quot; (&quot;T2&quot;.&quot;C1&quot;))</span>
+</span><span class='line'><span class="cm">      FULL(@&quot;SEL$1&quot; &quot;T1&quot;@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE(@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE(@&quot;SEL$2&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE_LEAF(@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      MERGE(@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE_LEAF(@&quot;SEL$335DD26A&quot;)</span>
+</span><span class='line'><span class="cm">      ALL_ROWS</span>
+</span><span class='line'><span class="cm">      DB_VERSION(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      OPTIMIZER_FEATURES_ENABLE(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      IGNORE_OPTIM_EMBEDDED_HINTS</span>
+</span><span class='line'><span class="cm">      END_OUTLINE_DATA</span>
+</span><span class='line'><span class="cm">  */</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Predicate</span> <span class="n">Information</span> <span class="p">(</span><span class="n">identified</span> <span class="k">by</span> <span class="k">operation</span> <span class="n">id</span><span class="p">):</span>
+</span><span class='line'><span class="c1">---------------------------------------------------</span>
+</span><span class='line'>
+</span><span class='line'>   <span class="mi">1</span> <span class="o">-</span> <span class="n">filter</span><span class="p">(</span> <span class="k">EXISTS</span> <span class="p">(</span><span class="k">SELECT</span> <span class="mi">0</span> <span class="k">FROM</span> <span class="ss">&quot;T3&quot;</span> <span class="ss">&quot;T3&quot;</span><span class="p">,</span><span class="ss">&quot;T2&quot;</span> <span class="ss">&quot;T2&quot;</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="ss">&quot;T2&quot;</span><span class="p">.</span><span class="ss">&quot;C1&quot;</span><span class="p">,:</span><span class="n">B1</span>
+</span><span class='line'>        <span class="k">HAVING</span> <span class="p">:</span><span class="n">B2</span><span class="o">&gt;</span><span class="p">:</span><span class="n">B3</span><span class="p">))</span>
+</span><span class='line'>   <span class="mi">3</span> <span class="o">-</span> <span class="n">filter</span><span class="p">(:</span><span class="n">B1</span><span class="o">&gt;</span><span class="p">:</span><span class="n">B2</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="mi">45</span> <span class="k">rows</span> <span class="n">selected</span><span class="p">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>可见当指定/*+LEADING(@&ldquo;SEL\$1 "T3&rdquo;@&ldquo;SEL\$3&rdquo; &ldquo;T2&rdquo;@&ldquo;SEL\$3&rdquo;)*/时，hint无效，join的顺序仍旧为t2,t3</p>
+
+<h3>总结</h3>
+
+<p>对于在hint中指定leading时，要想使hint生效需要保证：qb_name可以是改写之前的（本例中：SEL\$3），也可以是改写之后由系统生成的(本例中：SEL\$335DD26A)，但不可以是改写前外层的(本例中：SEL\$1)</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Yan Tingshuai</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-06-19T20:56:39+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>19</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>8:56 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/oracle/'>oracle</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/06/04/gdbchang-yong-ming-ling/" title="Previous Post: GDB常用命令">&laquo; GDB常用命令</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/06/19/oracle-create-outlinegong-neng/" title="Next Post: Oracle create outline功能">Oracle create outline功能 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/06/19/oracle-create-outlinegong-neng/">Oracle Create Outline功能</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/06/19/oraclezhong-transformdui-hintde-ying-xiang/">Oracle中transform对hint的影响</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/06/04/gdbchang-yong-ming-ling/">GDB常用命令</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/05/29/zheng-ze-biao-da-shi/">正则表达式</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/05/29/emacschang-yong-ming-ling/">Emacs常用命令</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - Yan Tingshuai -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,669 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Oracle Create Outline功能 - Yan Tingshuai's Blog</title>
+  <meta name="author" content="Yan Tingshuai">
+
+  
+  <meta name="description" content="# oracle中outline相关系统表 USER_OUTLINES
+USER_OUTLINE_HINTS
+ALL_OUTLINES
+ALL_OUTLINE_HINTS
+DBA_OUTLINES
+DBA_OUTLINE_HINTS create outline没有指定hint时的生成结果 1 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://yts1dx.github.io/blog/2016/06/19/oracle-create-outlinegong-neng/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Yan Tingshuai's Blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script> -->
+  <script src="//ajax.useso.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<!-- <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"> -->
+<!-- <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"> -->
+<link href="//fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Yan Tingshuai's Blog</a></h1>
+  
+    <h2>A Blog of SQLer.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.baidu.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="yts1dx.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Oracle Create Outline功能</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-06-19T21:04:08+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>19</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>9:04 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p> # oracle中outline相关系统表</p>
+
+<ul>
+<li>USER_OUTLINES</li>
+<li>USER_OUTLINE_HINTS</li>
+<li>ALL_OUTLINES</li>
+<li>ALL_OUTLINE_HINTS</li>
+<li>DBA_OUTLINES</li>
+<li>DBA_OUTLINE_HINTS</li>
+</ul>
+
+
+<h1>create outline没有指定hint时的生成结果</h1>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">create</span> <span class="n">outline</span> <span class="n">ol_1</span> <span class="k">FOR</span> <span class="n">CATEGORY</span> <span class="n">test</span> <span class="k">on</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">t1</span><span class="p">,</span><span class="n">t2</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Outline</span> <span class="n">created</span><span class="p">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">user_outline_hints</span> <span class="k">where</span> <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;OL_1&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">NAME</span>                    <span class="n">NODE</span>      <span class="n">STAGE</span>   <span class="n">JOIN_POS</span> <span class="n">HINT</span>
+</span><span class='line'><span class="c1">------------------------------ ---------- ---------- ---------- --------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="n">OL_1</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">USE_MERGE_CARTESIAN</span><span class="p">(</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span> <span class="ss">&quot;T2&quot;</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_1</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="k">LEADING</span><span class="p">(</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span> <span class="ss">&quot;T1&quot;</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span> <span class="ss">&quot;T2&quot;</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_1</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">2</span> <span class="k">FULL</span><span class="p">(</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span> <span class="ss">&quot;T2&quot;</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_1</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">1</span> <span class="k">FULL</span><span class="p">(</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span> <span class="ss">&quot;T1&quot;</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_1</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">OUTLINE_LEAF</span><span class="p">(</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_1</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">ALL_ROWS</span>
+</span><span class='line'><span class="n">OL_1</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">DB_VERSION</span><span class="p">(</span><span class="s1">&#39;11.2.0.2&#39;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_1</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">OPTIMIZER_FEATURES_ENABLE</span><span class="p">(</span><span class="s1">&#39;11.2.0.2&#39;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_1</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">IGNORE_OPTIM_EMBEDDED_HINTS</span>
+</span><span class='line'>
+</span><span class='line'><span class="mi">9</span> <span class="k">rows</span> <span class="n">selected</span><span class="p">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>可见，没有指定hint时，create outline的结果是根据plan生成的。</p>
+
+<h1>指定错误hint时，create outline的结果</h1>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">create</span> <span class="n">outline</span> <span class="n">ol_2</span> <span class="k">FOR</span> <span class="n">CATEGORY</span> <span class="n">test</span> <span class="k">on</span> <span class="k">select</span> <span class="cm">/*+ssssssss*/</span><span class="o">*</span> <span class="k">from</span> <span class="n">t1</span><span class="p">,</span><span class="n">t2</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Outline</span> <span class="n">created</span><span class="p">.</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">user_outline_hints</span> <span class="k">where</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;OL_2&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">NAME</span>                    <span class="n">NODE</span>      <span class="n">STAGE</span>   <span class="n">JOIN_POS</span> <span class="n">HINT</span>
+</span><span class='line'><span class="c1">------------------------------ ---------- ---------- ---------- --------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="n">OL_2</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">USE_MERGE_CARTESIAN</span><span class="p">(</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span> <span class="ss">&quot;T2&quot;</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_2</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="k">LEADING</span><span class="p">(</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span> <span class="ss">&quot;T1&quot;</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span> <span class="ss">&quot;T2&quot;</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_2</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">2</span> <span class="k">FULL</span><span class="p">(</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span> <span class="ss">&quot;T2&quot;</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_2</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">1</span> <span class="k">FULL</span><span class="p">(</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span> <span class="ss">&quot;T1&quot;</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_2</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">OUTLINE_LEAF</span><span class="p">(</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_2</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">ALL_ROWS</span>
+</span><span class='line'><span class="n">OL_2</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">DB_VERSION</span><span class="p">(</span><span class="s1">&#39;11.2.0.2&#39;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_2</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">OPTIMIZER_FEATURES_ENABLE</span><span class="p">(</span><span class="s1">&#39;11.2.0.2&#39;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_2</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">IGNORE_OPTIM_EMBEDDED_HINTS</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>可见，写一个无效的hint，在oracle中并不会报错，并且不会影响outline的生成结果</p>
+
+<h1>指定一个未创建的index，但是create outline后，创建该index</h1>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">create</span> <span class="k">index</span> <span class="n">t3_idx_1</span> <span class="k">on</span> <span class="n">t3</span><span class="p">(</span><span class="n">c2</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">Index</span> <span class="n">created</span><span class="p">.</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">index_name</span><span class="p">,</span> <span class="n">include_column</span> <span class="k">from</span> <span class="n">user_indexes</span> <span class="k">where</span> <span class="k">table_name</span> <span class="o">=</span><span class="s1">&#39;T3&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">INDEX_NAME</span>            <span class="n">INCLUDE_COLUMN</span>
+</span><span class='line'><span class="c1">------------------------------ --------------</span>
+</span><span class='line'><span class="n">T3_IDX_1</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>当前T3上面，创建的索引，只有T3_IDX_1。接下来创建一个outline，指定一个不存在的索引T3_IDX_2.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">create</span> <span class="n">outline</span> <span class="n">OL_3</span> <span class="k">FOR</span> <span class="n">CATEGORY</span> <span class="n">test</span> <span class="k">on</span> <span class="k">select</span> <span class="cm">/*+index(T3 T3_IDX_2)*/</span> <span class="o">*</span> <span class="k">from</span> <span class="n">T3</span> <span class="k">where</span> <span class="n">c2</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Outline</span> <span class="n">created</span><span class="p">.</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">user_outline_hints</span> <span class="k">where</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;OL_3&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">NAME</span>                    <span class="n">NODE</span>      <span class="n">STAGE</span>   <span class="n">JOIN_POS</span> <span class="n">HINT</span>
+</span><span class='line'><span class="c1">------------------------------ ---------- ---------- ---------- --------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="n">OL_3</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">1</span> <span class="n">INDEX_RS_ASC</span><span class="p">(</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span> <span class="ss">&quot;T3&quot;</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span> <span class="p">(</span><span class="ss">&quot;T3&quot;</span><span class="p">.</span><span class="ss">&quot;C2&quot;</span><span class="p">))</span>
+</span><span class='line'><span class="n">OL_3</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">OUTLINE_LEAF</span><span class="p">(</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_3</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">ALL_ROWS</span>
+</span><span class='line'><span class="n">OL_3</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">DB_VERSION</span><span class="p">(</span><span class="s1">&#39;11.2.0.2&#39;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_3</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">OPTIMIZER_FEATURES_ENABLE</span><span class="p">(</span><span class="s1">&#39;11.2.0.2&#39;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_3</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">IGNORE_OPTIM_EMBEDDED_HINTS</span>
+</span><span class='line'>
+</span><span class='line'><span class="mi">6</span> <span class="k">rows</span> <span class="n">selected</span><span class="p">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>根据上面的outline输出可以看见，使用了T3_IDX_1,此时创建新的索引T3_IDX_2.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">create</span> <span class="k">index</span> <span class="n">t3_idx_2</span> <span class="k">on</span> <span class="n">t3</span><span class="p">(</span><span class="n">c2</span><span class="p">,</span> <span class="n">c3</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">Index</span> <span class="n">created</span><span class="p">.</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">index_name</span><span class="p">,</span> <span class="n">include_column</span> <span class="k">from</span> <span class="n">user_indexes</span> <span class="k">where</span> <span class="k">table_name</span> <span class="o">=</span><span class="s1">&#39;T3&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">INDEX_NAME</span>            <span class="n">INCLUDE_COLUMN</span>
+</span><span class='line'><span class="c1">------------------------------ --------------</span>
+</span><span class='line'><span class="n">T3_IDX_2</span>
+</span><span class='line'><span class="n">T3_IDX_1</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>再次查看outline OL_3的情况</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">user_outline_hints</span> <span class="k">where</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;OL_3&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">NAME</span>                    <span class="n">NODE</span>      <span class="n">STAGE</span>   <span class="n">JOIN_POS</span> <span class="n">HINT</span>
+</span><span class='line'><span class="c1">------------------------------ ---------- ---------- ---------- --------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="n">OL_3</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">1</span> <span class="n">INDEX_RS_ASC</span><span class="p">(</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span> <span class="ss">&quot;T3&quot;</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span> <span class="p">(</span><span class="ss">&quot;T3&quot;</span><span class="p">.</span><span class="ss">&quot;C2&quot;</span><span class="p">))</span>
+</span><span class='line'><span class="n">OL_3</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">OUTLINE_LEAF</span><span class="p">(</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_3</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">ALL_ROWS</span>
+</span><span class='line'><span class="n">OL_3</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">DB_VERSION</span><span class="p">(</span><span class="s1">&#39;11.2.0.2&#39;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_3</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">OPTIMIZER_FEATURES_ENABLE</span><span class="p">(</span><span class="s1">&#39;11.2.0.2&#39;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_3</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">IGNORE_OPTIM_EMBEDDED_HINTS</span>
+</span><span class='line'>
+</span><span class='line'><span class="mi">6</span> <span class="k">rows</span> <span class="n">selected</span><span class="p">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>可见，仍旧使用的是T3_IDX_1. 那么检验一下T3_IDX_2是否能够生效, 再根据前面的语句创建一个OL_6</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">create</span> <span class="n">outline</span> <span class="n">OL_6</span> <span class="k">FOR</span> <span class="n">CATEGORY</span> <span class="n">test</span> <span class="k">on</span> <span class="k">select</span> <span class="cm">/*+index(T3 T3_IDX_2)*/</span> <span class="o">*</span> <span class="k">from</span> <span class="n">T3</span> <span class="k">where</span> <span class="n">c2</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Outline</span> <span class="n">created</span><span class="p">.</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">user_outline_hints</span> <span class="k">where</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;OL_6&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">NAME</span>                    <span class="n">NODE</span>      <span class="n">STAGE</span>   <span class="n">JOIN_POS</span> <span class="n">HINT</span>
+</span><span class='line'><span class="c1">------------------------------ ---------- ---------- ---------- --------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="n">OL_6</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">1</span> <span class="n">INDEX_RS_ASC</span><span class="p">(</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span> <span class="ss">&quot;T3&quot;</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span> <span class="p">(</span><span class="ss">&quot;T3&quot;</span><span class="p">.</span><span class="ss">&quot;C2&quot;</span> <span class="ss">&quot;T3&quot;</span><span class="p">.</span><span class="ss">&quot;C3&quot;</span><span class="p">))</span>
+</span><span class='line'><span class="n">OL_6</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">OUTLINE_LEAF</span><span class="p">(</span><span class="o">@</span><span class="ss">&quot;SEL$1&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_6</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">ALL_ROWS</span>
+</span><span class='line'><span class="n">OL_6</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">DB_VERSION</span><span class="p">(</span><span class="s1">&#39;11.2.0.2&#39;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_6</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">OPTIMIZER_FEATURES_ENABLE</span><span class="p">(</span><span class="s1">&#39;11.2.0.2&#39;</span><span class="p">)</span>
+</span><span class='line'><span class="n">OL_6</span>                   <span class="mi">1</span>      <span class="mi">1</span>          <span class="mi">0</span> <span class="n">IGNORE_OPTIM_EMBEDDED_HINTS</span>
+</span><span class='line'>
+</span><span class='line'><span class="mi">6</span> <span class="k">rows</span> <span class="n">selected</span><span class="p">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>可见，此时的outline中指定了T3_IDX_2</p>
+
+<h1>create outline时，对exits的判断</h1>
+
+<h2>创建具有相同outline name的情况</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">create</span> <span class="n">outline</span> <span class="n">exist_ol</span> <span class="k">on</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">t3</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Outline</span> <span class="n">created</span><span class="p">.</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">create</span> <span class="n">outline</span> <span class="n">exist_ol</span> <span class="k">on</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">t4</span><span class="p">;</span>
+</span><span class='line'><span class="k">create</span> <span class="n">outline</span> <span class="n">exist_ol</span> <span class="k">on</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">t4</span>
+</span><span class='line'>                                         <span class="o">*</span>
+</span><span class='line'><span class="n">ERROR</span> <span class="k">at</span> <span class="n">line</span> <span class="mi">1</span><span class="p">:</span>
+</span><span class='line'><span class="n">ORA</span><span class="o">-</span><span class="mi">18004</span><span class="p">:</span> <span class="n">outline</span> <span class="n">already</span> <span class="k">exists</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">name</span> <span class="p">,</span><span class="n">category</span><span class="p">,</span> <span class="n">used</span> <span class="p">,</span><span class="n">sql_text</span> <span class="k">from</span> <span class="n">user_outlines</span> <span class="k">where</span> <span class="n">CATEGORY</span> <span class="o">=</span> <span class="s1">&#39;DEFAULT&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">NAME</span>                  <span class="n">CATEGORY</span>            <span class="n">USED</span>   <span class="n">SQL_TEXT</span>
+</span><span class='line'><span class="c1">------------------------------ ------------------------------ ------ --------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="n">CC</span>                <span class="k">DEFAULT</span>                 <span class="n">UNUSED</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">t1</span>
+</span><span class='line'><span class="n">C1</span>                <span class="k">DEFAULT</span>                 <span class="n">UNUSED</span> <span class="k">select</span> <span class="cm">/*+ssssss*/</span><span class="o">*</span> <span class="k">from</span> <span class="n">t1</span>
+</span><span class='line'><span class="n">EXIST_OL</span>              <span class="k">DEFAULT</span>                 <span class="n">UNUSED</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">t3</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>由此可见在outline name相同，即使语句不同，仍旧无法创建</p>
+
+<h2>outline name 不同，sql语句相同</h2>
+
+<pre><code class="`sql">SQL&gt; create outline exist_ol_1 on select * from t3;
+create outline exist_ol_1 on select * from t3
+                                           *
+ERROR at line 1:
+ORA-18004: outline already exists
+
+
+SQL&gt; select name ,category, used ,sql_text from user_outlines where CATEGORY = 'DEFAULT';
+
+NAME                   CATEGORY               USED   SQL_TEXT
+------------------------------ ------------------------------ ------ --------------------------------------------------------------------------------
+CC                 DEFAULT                UNUSED select * from t1
+C1                 DEFAULT                UNUSED select /*+ssssss*/* from t1
+EXIST_OL               DEFAULT                UNUSED select * from t3
+</code></pre>
+
+<p> 可见，虽然outline name 不同，但是sql相同的情况下仍旧报错</p>
+
+<h2>outline name不同，sql不同，计划相同的情况</h2>
+
+<pre><code class="`sql"> SQL&gt; create outline exist_ol_1 on select /*+sssss*/* from t3;
+
+Outline created.
+
+SQL&gt; select name ,category, used ,sql_text from user_outlines where CATEGORY = 'DEFAULT';
+
+NAME                   CATEGORY               USED   SQL_TEXT
+------------------------------ ------------------------------ ------ --------------------------------------------------------------------------------
+CC                 DEFAULT                UNUSED select * from t1
+C1                 DEFAULT                UNUSED select /*+ssssss*/* from t1
+EXIST_OL               DEFAULT                UNUSED select * from t3
+EXIST_OL_1             DEFAULT                UNUSED select /*+sssss*/* from t3
+</code></pre>
+
+<p> 可见，在sql中加入无效的hint后，仍旧成功
+ ```sql
+ SQL> create outline exist_ol_2 on select * from                t3;
+create outline exist_ol_2 on select * from        t3
+                                                          *
+ERROR at line 1:
+ORA-18004: outline already exists</p>
+
+<p>SQL> select name ,category, used ,sql_text from user_outlines where CATEGORY = &lsquo;DEFAULT&rsquo;;</p>
+
+<p>NAME                   CATEGORY               USED   SQL_TEXT</p>
+
+<hr />
+
+<p>CC                 DEFAULT                UNUSED select * from t1
+C1                 DEFAULT                UNUSED select /<em>+ssssss</em>/<em> from t1
+EXIST_OL               DEFAULT                UNUSED select * from t3
+EXIST_OL_1             DEFAULT                UNUSED select /</em>+sssss<em>/</em> from t3
+ ```
+ 但是，仅仅是加入无效的空格的话，仍旧无法创建。</p>
+
+<h1>create or replace的表现</h1>
+
+<p>oracle文档中的描述</p>
+
+<blockquote><p>Specify OR REPLACE to replace an existing outline with a new outline of the same name.</p></blockquote>
+
+<h2>使用原来的名字，替换outline</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">name</span><span class="p">,</span> <span class="n">sql_text</span><span class="p">,</span> <span class="n">category</span> <span class="k">from</span> <span class="n">user_outlines</span> <span class="k">where</span> <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;CC&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">NAME</span>                  <span class="n">SQL_TEXT</span>                                  <span class="n">CATEGORY</span>
+</span><span class='line'><span class="c1">------------------------------ -------------------------------------------------------------------------------- ------------------------------</span>
+</span><span class='line'><span class="n">CC</span>                <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">t1</span><span class="p">,</span><span class="n">t2</span>                                <span class="k">DEFAULT</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">create</span> <span class="k">or</span> <span class="k">replace</span> <span class="n">outline</span> <span class="n">cc</span> <span class="k">on</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">t1</span><span class="p">,</span><span class="n">t2</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Outline</span> <span class="n">created</span><span class="p">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>可见 ，当outlie_name和sql完全相同时可以成功</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">name</span><span class="p">,</span> <span class="n">sql_text</span><span class="p">,</span> <span class="n">category</span> <span class="k">from</span> <span class="n">user_outlines</span> <span class="k">where</span> <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;CC&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">NAME</span>                  <span class="n">SQL_TEXT</span>                                  <span class="n">CATEGORY</span>
+</span><span class='line'><span class="c1">------------------------------ -------------------------------------------------------------------------------- ------------------------------</span>
+</span><span class='line'><span class="n">CC</span>                <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">t1</span><span class="p">,</span><span class="n">t2</span>                                <span class="k">DEFAULT</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">create</span> <span class="k">or</span> <span class="k">replace</span> <span class="n">outline</span> <span class="n">cc</span> <span class="k">on</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">t1</span><span class="p">,</span><span class="n">t2</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Outline</span> <span class="n">created</span><span class="p">.</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">create</span> <span class="k">or</span> <span class="k">replace</span> <span class="n">outline</span> <span class="n">cc</span> <span class="k">on</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">t1</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Outline</span> <span class="n">created</span><span class="p">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>可见 ，当outlie_name相同和sql不同时可以成功，并对原理的sql进行替换。以上这两种，是符合oracle描述的。</p>
+
+<h2>outline name不存在，outline已经存在的情况下</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">name</span><span class="p">,</span> <span class="n">sql_text</span><span class="p">,</span> <span class="n">category</span> <span class="k">from</span> <span class="n">user_outlines</span> <span class="k">where</span> <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;CC_1&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">NAME</span>                  <span class="n">SQL_TEXT</span>                                  <span class="n">CATEGORY</span>
+</span><span class='line'><span class="c1">------------------------------ -------------------------------------------------------------------------------- ------------------------------</span>
+</span><span class='line'><span class="n">CC_1</span>                  <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">t1</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">create</span> <span class="k">or</span> <span class="k">replace</span> <span class="n">outline</span> <span class="n">cc</span> <span class="k">on</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">t1</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Outline</span> <span class="n">created</span><span class="p">.</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">name</span><span class="p">,</span> <span class="n">sql_text</span><span class="p">,</span> <span class="n">category</span> <span class="k">from</span> <span class="n">user_outlines</span> <span class="k">where</span> <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;CC_1&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">no</span> <span class="k">rows</span> <span class="n">selected</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">name</span><span class="p">,</span> <span class="n">sql_text</span><span class="p">,</span> <span class="n">category</span> <span class="k">from</span> <span class="n">user_outlines</span> <span class="k">where</span> <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;CC&#39;</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">NAME</span>                  <span class="n">SQL_TEXT</span>                                  <span class="n">CATEGORY</span>
+</span><span class='line'><span class="c1">------------------------------ -------------------------------------------------------------------------------- ------------------------------</span>
+</span><span class='line'><span class="n">CC</span>                <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">t1</span>                                 <span class="k">DEFAULT</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>可见，在对已经存在的sql使用replace时，outline_name会被直接替换掉。</p>
+
+<h1>总结create outline在oracle中的表现</h1>
+
+<ul>
+<li>outline是完全按照plan生成的</li>
+<li>create outline时忽略无效和错误的hint，并不会给客户端返回错误</li>
+<li>生成的outline只会受当前的plan影响，当前指定的hint在未来创建时也不会加入到当前的outline中。</li>
+<li>create outlline的重复性，会同时判断outline_name和sql（不是简单的字符串匹配）</li>
+<li>create or replace的表现：如果outline name已经存在，sql不同时，则替换sql；如果sql已经存在，outline不同时，则替换outline name</li>
+</ul>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Yan Tingshuai</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-06-19T21:04:08+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>19</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>9:04 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/oracle/'>oracle</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/06/19/oraclezhong-transformdui-hintde-ying-xiang/" title="Previous Post: Oracle中transform对hint的影响">&laquo; Oracle中transform对hint的影响</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/06/19/oracle-create-outlinegong-neng/">Oracle Create Outline功能</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/06/19/oraclezhong-transformdui-hintde-ying-xiang/">Oracle中transform对hint的影响</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/06/04/gdbchang-yong-ming-ling/">GDB常用命令</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/05/29/zheng-ze-biao-da-shi/">正则表达式</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/05/29/emacschang-yong-ming-ling/">Emacs常用命令</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - Yan Tingshuai -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
