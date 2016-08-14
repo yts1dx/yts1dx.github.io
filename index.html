@@ -98,18 +98,17 @@
 
 <p>下面这段阐述了不同DB下<strong>隔离级别</strong>的影响</p>
 
-<blockquote><p>In Oracle and earlier PostgreSQL versions, REPEATABLE READ is actually a synonym for SERIALIZABLE. Basically, this means that the transaction does not see changes made after it has started. So in this setup, the last Thread 1 query will return the room as if it has never been deleted (which may or may not be what you wanted). If you don&rsquo;t want to show the rooms after they have been deleted, you should lock the rows with SELECT FOR UPDATE
-In InnoDB, REPEATABLE READ and SERIALIZABLE are different things: readers in SERIALIZABLE mode set next-key locks on the records they evaluate, effectively preventing the concurrent DML on them. So you don&rsquo;t need a SELECT FOR UPDATE in serializable mode, but do need them in REPEATABLE READ or READ COMMITED.</p></blockquote>
+<blockquote><p>In Oracle and earlier PostgreSQL versions, REPEATABLE READ is actually a synonym for SERIALIZABLE. Basically, this means that the transaction does not see changes made after it has started. So in this setup, the last Thread 1 query will return the room as if it has never been deleted (which may or may not be what you wanted). If you don&rsquo;t want to show the rooms after they have been deleted, you should lock the rows with SELECT FOR UPDATE</p>
+
+<p>In InnoDB, REPEATABLE READ and SERIALIZABLE are different things: readers in SERIALIZABLE mode set next-key locks on the records they evaluate, effectively preventing the concurrent DML on them. So you don&rsquo;t need a SELECT FOR UPDATE in serializable mode, but do need them in REPEATABLE READ or READ COMMITED.</p></blockquote>
 
 <p>例如下面就是对不同<strong>并发控制</strong>下的选择：</p>
 
-<blockquote><p>The only portable way to achieve consistency between rooms and tags and making sure rooms are never returned after they had been deleted is locking them with SELECT FOR UPDATE.
-However in some systems locking is a side effect of concurrency control, and you achieve the same results without specifying FOR UPDATE explicitly.
-To solve this problem, Thread 1 should SELECT id FROM rooms FOR UPDATE, thereby preventing Thread 2 from deleting from rooms until Thread 1 is done. Is that correct?
-This depends on the concurrency control your database system is using.
-MyISAM in MySQL (and several other old systems) does lock the whole table for the duration of a query.
-In SQL Server, SELECT queries place shared locks on the records / pages / tables they have examined, while DML queries place update locks (which later get promoted to exclusive or demoted to shared locks). Exclusive locks are incompatible with shared locks, so either SELECT or DELETE query will lock until another session commits.
-In databases which use MVCC (like Oracle, PostgreSQL, MySQL with InnoDB), a DML query creates a copy of the record (in one or another way) and generally readers do not block writers and vice versa. For these databases, a SELECT FOR UPDATE would come handy: it would lock either SELECT or the DELETE query until another session commits, just as SQL Server does.</p></blockquote>
+<blockquote><p>MyISAM in MySQL (and several other old systems) does lock the whole table for the duration of a query.</p>
+
+<p>In SQL Server, SELECT queries place shared locks on the records / pages / tables they have examined, while DML queries place update locks (which later get promoted to exclusive or demoted to shared locks). Exclusive locks are incompatible with shared locks, so either SELECT or DELETE query will lock until another session commits.</p>
+
+<p>In databases which use MVCC (like Oracle, PostgreSQL, MySQL with InnoDB), a DML query creates a copy of the record (in one or another way) and generally readers do not block writers and vice versa. For these databases, a SELECT FOR UPDATE would come handy: it would lock either SELECT or the DELETE query until another session commits, just as SQL Server does.</p></blockquote>
 
 <h3>参考资料</h3>
 
