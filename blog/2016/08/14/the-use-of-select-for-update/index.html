@@ -1,0 +1,212 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>The Use of Select for Update - Yan Tingshuai's Blog</title>
+  <meta name="author" content="Yan Tingshuai">
+
+  
+  <meta name="description" content="问题 何时需要使用select for update 当需要实现atomic的read &amp; write的场景时可能需要使用到select for update。之所以说是可能，是因为受数据库隔离级别和并发控制实现影响。 下面这段阐述了不同DB下隔离级别的影响 In Oracle and &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://yts1dx.github.io/blog/2016/08/14/the-use-of-select-for-update/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Yan Tingshuai's Blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script> -->
+  <script src="//ajax.useso.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<!-- <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"> -->
+<!-- <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"> -->
+<link href="//fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Yan Tingshuai's Blog</a></h1>
+  
+    <h2>A Blog of SQLer.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.baidu.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="yts1dx.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">The Use of Select for Update</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-08-14T17:56:44+08:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>5:56 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h3>问题</h3>
+
+<h4>何时需要使用select for update</h4>
+
+<p>当需要实现atomic的read &amp; write的场景时<strong>可能</strong>需要使用到select for update。之所以说是可能，是因为受数据库<strong>隔离级别</strong>和<strong>并发控制</strong>实现影响。</p>
+
+<p>下面这段阐述了不同DB下<strong>隔离级别</strong>的影响</p>
+
+<blockquote><p>In Oracle and earlier PostgreSQL versions, REPEATABLE READ is actually a synonym for SERIALIZABLE. Basically, this means that the transaction does not see changes made after it has started. So in this setup, the last Thread 1 query will return the room as if it has never been deleted (which may or may not be what you wanted). If you don&rsquo;t want to show the rooms after they have been deleted, you should lock the rows with SELECT FOR UPDATE
+In InnoDB, REPEATABLE READ and SERIALIZABLE are different things: readers in SERIALIZABLE mode set next-key locks on the records they evaluate, effectively preventing the concurrent DML on them. So you don&rsquo;t need a SELECT FOR UPDATE in serializable mode, but do need them in REPEATABLE READ or READ COMMITED.</p></blockquote>
+
+<p>例如下面就是对不同<strong>并发控制</strong>下的选择：</p>
+
+<blockquote><p>The only portable way to achieve consistency between rooms and tags and making sure rooms are never returned after they had been deleted is locking them with SELECT FOR UPDATE.
+However in some systems locking is a side effect of concurrency control, and you achieve the same results without specifying FOR UPDATE explicitly.
+To solve this problem, Thread 1 should SELECT id FROM rooms FOR UPDATE, thereby preventing Thread 2 from deleting from rooms until Thread 1 is done. Is that correct?
+This depends on the concurrency control your database system is using.
+MyISAM in MySQL (and several other old systems) does lock the whole table for the duration of a query.
+In SQL Server, SELECT queries place shared locks on the records / pages / tables they have examined, while DML queries place update locks (which later get promoted to exclusive or demoted to shared locks). Exclusive locks are incompatible with shared locks, so either SELECT or DELETE query will lock until another session commits.
+In databases which use MVCC (like Oracle, PostgreSQL, MySQL with InnoDB), a DML query creates a copy of the record (in one or another way) and generally readers do not block writers and vice versa. For these databases, a SELECT FOR UPDATE would come handy: it would lock either SELECT or the DELETE query until another session commits, just as SQL Server does.</p></blockquote>
+
+<h3>参考资料</h3>
+
+<p><a href="http://stackoverflow.com/questions/10935850/when-to-use-select-for-update">When to use SELECT … FOR UPDATE?</a>
+<a href="http://dev.mysql.com/doc/refman/5.7/en/innodb-locking-reads.html">Mysql Lock Read</a></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Yan Tingshuai</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-08-14T17:56:44+08:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>5:56 pm</span></time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/06/19/oracle-create-outlinegong-neng/" title="Previous Post: Oracle create outline功能">&laquo; Oracle create outline功能</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/08/14/the-use-of-select-for-update/">The Use of Select for Update</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/06/19/oracle-create-outlinegong-neng/">Oracle Create Outline功能</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/06/19/oraclezhong-transformdui-hintde-ying-xiang/">Oracle中transform对hint的影响</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/06/04/gdbchang-yong-ming-ling/">Gdbchang Yong Ming Ling</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/05/29/zheng-ze-biao-da-shi/">正则表达式</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - Yan Tingshuai -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

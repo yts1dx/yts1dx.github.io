@@ -4,7 +4,7 @@
   <title><![CDATA[Yan Tingshuai's Blog]]></title>
   <link href="http://yts1dx.github.io/atom.xml" rel="self"/>
   <link href="http://yts1dx.github.io/"/>
-  <updated>2016-06-19T21:17:16+08:00</updated>
+  <updated>2016-08-14T18:17:14+08:00</updated>
   <id>http://yts1dx.github.io/</id>
   <author>
     <name><![CDATA[Yan Tingshuai]]></name>
@@ -12,6 +12,39 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[The Use of Select for Update]]></title>
+    <link href="http://yts1dx.github.io/blog/2016/08/14/the-use-of-select-for-update/"/>
+    <updated>2016-08-14T17:56:44+08:00</updated>
+    <id>http://yts1dx.github.io/blog/2016/08/14/the-use-of-select-for-update</id>
+    <content type="html"><![CDATA[<h3>问题</h3>
+
+<h4>何时需要使用select for update</h4>
+
+<p>当需要实现atomic的read &amp; write的场景时<strong>可能</strong>需要使用到select for update。之所以说是可能，是因为受数据库<strong>隔离级别</strong>和<strong>并发控制</strong>实现影响。</p>
+
+<p>下面这段阐述了不同DB下<strong>隔离级别</strong>的影响</p>
+
+<blockquote><p>In Oracle and earlier PostgreSQL versions, REPEATABLE READ is actually a synonym for SERIALIZABLE. Basically, this means that the transaction does not see changes made after it has started. So in this setup, the last Thread 1 query will return the room as if it has never been deleted (which may or may not be what you wanted). If you don&rsquo;t want to show the rooms after they have been deleted, you should lock the rows with SELECT FOR UPDATE
+In InnoDB, REPEATABLE READ and SERIALIZABLE are different things: readers in SERIALIZABLE mode set next-key locks on the records they evaluate, effectively preventing the concurrent DML on them. So you don&rsquo;t need a SELECT FOR UPDATE in serializable mode, but do need them in REPEATABLE READ or READ COMMITED.</p></blockquote>
+
+<p>例如下面就是对不同<strong>并发控制</strong>下的选择：</p>
+
+<blockquote><p>The only portable way to achieve consistency between rooms and tags and making sure rooms are never returned after they had been deleted is locking them with SELECT FOR UPDATE.
+However in some systems locking is a side effect of concurrency control, and you achieve the same results without specifying FOR UPDATE explicitly.
+To solve this problem, Thread 1 should SELECT id FROM rooms FOR UPDATE, thereby preventing Thread 2 from deleting from rooms until Thread 1 is done. Is that correct?
+This depends on the concurrency control your database system is using.
+MyISAM in MySQL (and several other old systems) does lock the whole table for the duration of a query.
+In SQL Server, SELECT queries place shared locks on the records / pages / tables they have examined, while DML queries place update locks (which later get promoted to exclusive or demoted to shared locks). Exclusive locks are incompatible with shared locks, so either SELECT or DELETE query will lock until another session commits.
+In databases which use MVCC (like Oracle, PostgreSQL, MySQL with InnoDB), a DML query creates a copy of the record (in one or another way) and generally readers do not block writers and vice versa. For these databases, a SELECT FOR UPDATE would come handy: it would lock either SELECT or the DELETE query until another session commits, just as SQL Server does.</p></blockquote>
+
+<h3>参考资料</h3>
+
+<p><a href="http://stackoverflow.com/questions/10935850/when-to-use-select-for-update">When to use SELECT … FOR UPDATE?</a>
+<a href="http://dev.mysql.com/doc/refman/5.7/en/innodb-locking-reads.html">Mysql Lock Read</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Oracle Create Outline功能]]></title>
@@ -1304,11 +1337,21 @@ EXIST_OL_1             DEFAULT                UNUSED select /</em>+sssss<em>/</e
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[GDB常用命令]]></title>
+    <title type="html"><![CDATA[Gdbchang Yong Ming Ling]]></title>
     <link href="http://yts1dx.github.io/blog/2016/06/04/gdbchang-yong-ming-ling/"/>
-    <updated>2016-06-04T19:32:28+08:00</updated>
+    <updated>2016-06-04T00:00:00+08:00</updated>
     <id>http://yts1dx.github.io/blog/2016/06/04/gdbchang-yong-ming-ling</id>
-    <content type="html"><![CDATA[<h1>GDB输出相关</h1>
+    <content type="html"><![CDATA[<pre><code>⁃ ---
+</code></pre>
+
+<p>layout: post
+title: &ldquo;GDB常用命令&rdquo;
+date: 2016-06-04 19:32:28 +0800
+comments: true</p>
+
+<h2>categories: GDB</h2>
+
+<h1>GDB输出相关</h1>
 
 <h2>打印格式指定</h2>
 
@@ -1399,14 +1442,14 @@ break location thread thread-id</p></blockquote>
     <link href="http://yts1dx.github.io/blog/2016/05/15/use-oracle-explain/"/>
     <updated>2016-05-15T20:08:21+08:00</updated>
     <id>http://yts1dx.github.io/blog/2016/05/15/use-oracle-explain</id>
-    <content type="html"><![CDATA[<h2>生成explain</h2>
+    <content type="html"><![CDATA[<h3>生成explain</h3>
 
 <pre><code>SQL&gt; explain plan into plan_table for  select /*+index(test testi) */ * from t1;
 
 Explained.
 </code></pre>
 
-<h2>查看含有outline的explain</h2>
+<h3>查看含有outline的explain</h3>
 
 <pre><code>SQL&gt; select * from table(dbms_xplan.display('PLAN_TABLE',NULL,'OUTLINE'));
 
@@ -1448,7 +1491,7 @@ Note
 26 rows selected.
 </code></pre>
 
-<h2>index 的表现</h2>
+<h3>index 的表现</h3>
 
 <pre><code>    SQL&gt; select * from table(dbms_xplan.display('plan_table',NULL,'OUTLINE'));
 
@@ -1525,7 +1568,7 @@ Note
     27 rows selected.
 </code></pre>
 
-<h2>涉及到rewrite时，hint中的qb_name</h2>
+<h3>涉及到rewrite时，hint中的qb_name</h3>
 
 <pre><code>    SQL&gt; select * from table(dbms_xplan.display('plan_table',NULL,'OUTLINE'));
 
@@ -1572,7 +1615,7 @@ Note
     31 rows selected.
 </code></pre>
 
-<h2>多表join的情况</h2>
+<h3>多表join的情况</h3>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -1675,7 +1718,7 @@ Note
 </span></code></pre></td></tr></table></div></figure>
 
 
-<h2>join含有view的情况</h2>
+<h3>join含有view的情况</h3>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -1776,7 +1819,7 @@ Note
 </span></code></pre></td></tr></table></div></figure>
 
 
-<h2>busy tree</h2>
+<h3>busy tree</h3>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -1917,7 +1960,7 @@ Note
 </span></code></pre></td></tr></table></div></figure>
 
 
-<h2>指定ordered hint的情况</h2>
+<h3>指定ordered hint的情况</h3>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -2010,7 +2053,7 @@ Note
 </span></code></pre></td></tr></table></div></figure>
 
 
-<h2>update outline输出</h2>
+<h3>update outline输出</h3>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -2103,7 +2146,7 @@ Note
 </span></code></pre></td></tr></table></div></figure>
 
 
-<h2>Oracle对于USE_HASH_AGGREGATION和NO_USE_HASH_AGGREGATION的使用</h2>
+<h3>Oracle对于USE_HASH_AGGREGATION和NO_USE_HASH_AGGREGATION的使用</h3>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -2219,6 +2262,117 @@ Note
 </span><span class='line'><span class="n">CORE</span>   <span class="mi">11</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span>  <span class="n">Production</span>
 </span><span class='line'><span class="n">TNS</span> <span class="k">for</span> <span class="n">Linux</span><span class="p">:</span> <span class="k">Version</span> <span class="mi">11</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span> <span class="o">-</span> <span class="n">Production</span>
 </span><span class='line'><span class="n">NLSRTL</span> <span class="k">Version</span> <span class="mi">11</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span> <span class="o">-</span> <span class="n">Production</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Join的成员中含有subplan filter的情况</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">explain</span> <span class="n">plan</span> <span class="k">into</span> <span class="n">plan_table</span> <span class="k">for</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">t1</span> <span class="k">left</span> <span class="k">join</span> <span class="n">t2</span> <span class="k">on</span> <span class="n">t1</span><span class="p">.</span><span class="n">c1</span> <span class="k">in</span> <span class="p">(</span><span class="k">select</span> <span class="n">t3</span><span class="p">.</span><span class="n">c1</span> <span class="k">from</span> <span class="n">t3</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Explained</span><span class="p">.</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="k">table</span><span class="p">(</span><span class="n">dbms_xplan</span><span class="p">.</span><span class="n">display</span><span class="p">(</span><span class="s1">&#39;PLAN_TABLE&#39;</span><span class="p">,</span><span class="k">NULL</span><span class="p">,</span><span class="s1">&#39;OUTLINE&#39;</span><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">PLAN_TABLE_OUTPUT</span>
+</span><span class='line'><span class="c1">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="n">Plan</span> <span class="n">hash</span> <span class="n">value</span><span class="p">:</span> <span class="mi">2533311414</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">-----------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span> <span class="n">Id</span>  <span class="o">|</span> <span class="k">Operation</span>      <span class="o">|</span> <span class="n">Name</span> <span class="o">|</span> <span class="k">Rows</span>  <span class="o">|</span> <span class="n">Bytes</span> <span class="o">|</span> <span class="n">Cost</span> <span class="p">(</span><span class="o">%</span><span class="n">CPU</span><span class="p">)</span><span class="o">|</span> <span class="n">Time</span>     <span class="o">|</span>
+</span><span class='line'><span class="c1">-----------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">0</span> <span class="o">|</span> <span class="k">SELECT</span> <span class="k">STATEMENT</span>     <span class="o">|</span>     <span class="o">|</span>      <span class="mi">1</span> <span class="o">|</span>     <span class="mi">52</span> <span class="o">|</span>      <span class="mi">6</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">1</span> <span class="o">|</span>  <span class="n">NESTED</span> <span class="n">LOOPS</span> <span class="k">OUTER</span>  <span class="o">|</span>      <span class="o">|</span>      <span class="mi">1</span> <span class="o">|</span>     <span class="mi">52</span> <span class="o">|</span>      <span class="mi">6</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">2</span> <span class="o">|</span>   <span class="k">TABLE</span> <span class="k">ACCESS</span> <span class="k">FULL</span>  <span class="o">|</span> <span class="n">T1</span>   <span class="o">|</span>   <span class="mi">1</span> <span class="o">|</span>     <span class="mi">26</span> <span class="o">|</span>      <span class="mi">2</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">3</span> <span class="o">|</span>   <span class="k">VIEW</span>            <span class="o">|</span>       <span class="o">|</span>      <span class="mi">1</span> <span class="o">|</span>     <span class="mi">26</span> <span class="o">|</span>      <span class="mi">4</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|*</span>  <span class="mi">4</span> <span class="o">|</span>    <span class="n">FILTER</span>         <span class="o">|</span>       <span class="o">|</span>        <span class="o">|</span>        <span class="o">|</span>         <span class="o">|</span>       <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">5</span> <span class="o">|</span>     <span class="k">TABLE</span> <span class="k">ACCESS</span> <span class="k">FULL</span><span class="o">|</span> <span class="n">T2</span>   <span class="o">|</span>   <span class="mi">1</span> <span class="o">|</span>     <span class="mi">26</span> <span class="o">|</span>      <span class="mi">2</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|*</span>  <span class="mi">6</span> <span class="o">|</span>     <span class="k">TABLE</span> <span class="k">ACCESS</span> <span class="k">FULL</span><span class="o">|</span> <span class="n">T3</span>   <span class="o">|</span>   <span class="mi">1</span> <span class="o">|</span>      <span class="mi">3</span> <span class="o">|</span>      <span class="mi">2</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="c1">-----------------------------------------------------------------------------</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Outline</span> <span class="k">Data</span>
+</span><span class='line'><span class="c1">-------------</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/*+</span>
+</span><span class='line'><span class="cm">      BEGIN_OUTLINE_DATA</span>
+</span><span class='line'><span class="cm">      FULL(@&quot;SEL$2&quot; &quot;T3&quot;@&quot;SEL$2&quot;)</span>
+</span><span class='line'><span class="cm">      FULL(@&quot;SEL$1&quot; &quot;T2&quot;@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      USE_NL(@&quot;SEL$37633EB5&quot; &quot;from$_subquery$_005&quot;@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      LEADING(@&quot;SEL$37633EB5&quot; &quot;T1&quot;@&quot;SEL$3&quot; &quot;from$_subquery$_005&quot;@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      NO_ACCESS(@&quot;SEL$37633EB5&quot; &quot;from$_subquery$_005&quot;@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      FULL(@&quot;SEL$37633EB5&quot; &quot;T1&quot;@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE(@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE(@&quot;SEL$4&quot;)</span>
+</span><span class='line'><span class="cm">      MERGE(@&quot;SEL$3&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE_LEAF(@&quot;SEL$37633EB5&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE_LEAF(@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE_LEAF(@&quot;SEL$2&quot;)</span>
+</span><span class='line'><span class="cm">      ALL_ROWS</span>
+</span><span class='line'><span class="cm">      DB_VERSION(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      OPTIMIZER_FEATURES_ENABLE(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      IGNORE_OPTIM_EMBEDDED_HINTS</span>
+</span><span class='line'><span class="cm">      END_OUTLINE_DATA</span>
+</span><span class='line'><span class="cm">  */</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Predicate</span> <span class="n">Information</span> <span class="p">(</span><span class="n">identified</span> <span class="k">by</span> <span class="k">operation</span> <span class="n">id</span><span class="p">):</span>
+</span><span class='line'><span class="c1">---------------------------------------------------</span>
+</span><span class='line'>
+</span><span class='line'>   <span class="mi">4</span> <span class="o">-</span> <span class="n">filter</span><span class="p">(</span> <span class="k">EXISTS</span> <span class="p">(</span><span class="k">SELECT</span> <span class="mi">0</span> <span class="k">FROM</span> <span class="ss">&quot;T3&quot;</span> <span class="ss">&quot;T3&quot;</span> <span class="k">WHERE</span> <span class="ss">&quot;T3&quot;</span><span class="p">.</span><span class="ss">&quot;C1&quot;</span><span class="o">=</span><span class="p">:</span><span class="n">B1</span><span class="p">))</span>
+</span><span class='line'>   <span class="mi">6</span> <span class="o">-</span> <span class="n">filter</span><span class="p">(</span><span class="ss">&quot;T3&quot;</span><span class="p">.</span><span class="ss">&quot;C1&quot;</span><span class="o">=</span><span class="p">:</span><span class="n">B1</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="mi">43</span> <span class="k">rows</span> <span class="n">selected</span><span class="p">.</span>
 </span></code></pre></td></tr></table></div></figure>
 
 

@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
+<loc>http://yts1dx.github.io/blog/2016/08/14/the-use-of-select-for-update/</loc>
+<lastmod>2016-08-14T17:56:44+08:00</lastmod>
+</url>
+<url>
 <loc>http://yts1dx.github.io/blog/2016/06/19/oracle-create-outlinegong-neng/</loc>
 <lastmod>2016-06-19T21:04:08+08:00</lastmod>
 </url>
@@ -10,7 +14,7 @@
 </url>
 <url>
 <loc>http://yts1dx.github.io/blog/2016/06/04/gdbchang-yong-ming-ling/</loc>
-<lastmod>2016-06-04T19:32:28+08:00</lastmod>
+<lastmod>2016-06-04T00:00:00+08:00</lastmod>
 </url>
 <url>
 <loc>http://yts1dx.github.io/blog/2016/05/29/zheng-ze-biao-da-shi/</loc>
@@ -46,8 +50,5 @@
 </url>
 <url>
 <loc>http://yts1dx.github.io/blog/categories/script/</loc>
-</url>
-<url>
-<loc>http://yts1dx.github.io/blog/categories/gdb/</loc>
 </url>
 </urlset>
