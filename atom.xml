@@ -4,7 +4,7 @@
   <title><![CDATA[Yan Tingshuai's Blog]]></title>
   <link href="http://yts1dx.github.io/atom.xml" rel="self"/>
   <link href="http://yts1dx.github.io/"/>
-  <updated>2016-08-14T18:19:54+08:00</updated>
+  <updated>2016-08-15T21:19:44+08:00</updated>
   <id>http://yts1dx.github.io/</id>
   <author>
     <name><![CDATA[Yan Tingshuai]]></name>
@@ -12,6 +12,168 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Use of Flex]]></title>
+    <link href="http://yts1dx.github.io/blog/2016/08/15/use-of-flex/"/>
+    <updated>2016-08-15T20:19:01+08:00</updated>
+    <id>http://yts1dx.github.io/blog/2016/08/15/use-of-flex</id>
+    <content type="html"><![CDATA[<h3>Format of the Input File</h3>
+
+<p>Input File由三部分组成，通过%%进行隔离</p>
+
+<blockquote><p>definitions
+  %%
+  rules
+  %%
+  user code</p></blockquote>
+
+<h4>definitions</h4>
+
+<p>该部分用来定义Name，来指定一种匹配的形式;或者指定start condition，通过start condition, flex可以使得一下规则在某些场景下才能生效。</p>
+
+<h4>rules</h4>
+
+<p>定义pattern和action</p>
+
+<h3>Flex global Macro</h3>
+
+<h4>yytext &amp; yyleng</h4>
+
+<p>yytext:指向匹配内容的指针；可以通过声明来指定yytext 是一个pointer还是一个array。
+yyleng:匹配内容的长度</p>
+
+<h4>yyextra</h4>
+
+<p>通过yyextra可以存放用户指定的数据。在scanner之外，可以通过yyset_extra和yyget_extra来设置和货到yyextra的内容。
+默认情况下yyextra为void * 类型，但是用户可以重新定义其类型。</p>
+
+<h3>Flex global Functions</h3>
+
+<h4>yylex()</h4>
+
+<p>当yylex()被调用时，其读取输入文件，直到某个action执行return或到达文件尾部为止。</p>
+
+<h3>参考资料</h3>
+
+<p><a href="http://flex.sourceforge.net/manual/Generated-Scanner.html#Generated-Scanner">The Generated Scanner</a>
+<a href="http://flex.sourceforge.net/manual/Matching.html#Matching">How the Input Is Matched</a>
+<a href="http://flex.sourceforge.net/manual/Start-Conditions.html#Start-Conditions">Start Conditions</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Oracle Left Deep]]></title>
+    <link href="http://yts1dx.github.io/blog/2016/08/14/oracle-left-deep/"/>
+    <updated>2016-08-14T18:45:23+08:00</updated>
+    <id>http://yts1dx.github.io/blog/2016/08/14/oracle-left-deep</id>
+    <content type="html"><![CDATA[<h3>结论先行</h3>
+
+<p>在Oracle中，<strong>nest loop join</strong>只会生成left deep joins tree；<strong>hash join</strong>可能会生成left deep joins 或right deep joins。</p>
+
+<h4>Hash Join</h4>
+
+<p>对于Hash join由于选择不同的hash对象（对基表hash还是对join的中间结果进行hash），可能会生成不同的树形结构。
+Oracle的优化器会选择较小的表作为build table。例如下面，生成了一个left deep tree.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">explain</span> <span class="n">plan</span> <span class="k">into</span> <span class="n">plan_table</span> <span class="k">for</span> <span class="k">select</span> <span class="cm">/*+use_hash(t2) use_hash(t3) leading(t1 t2 t3)*/</span><span class="o">*</span> <span class="k">from</span> <span class="n">t1</span><span class="p">,</span><span class="n">t2</span><span class="p">,</span><span class="n">t3</span> <span class="k">where</span> <span class="n">t1</span><span class="p">.</span><span class="n">c1</span><span class="o">=</span><span class="n">t2</span><span class="p">.</span><span class="n">c1</span> <span class="k">and</span> <span class="n">t2</span><span class="p">.</span><span class="n">c1</span><span class="o">=</span><span class="n">t3</span><span class="p">.</span><span class="n">c1</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Explained</span><span class="p">.</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">SQL</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="k">table</span><span class="p">(</span><span class="n">dbms_xplan</span><span class="p">.</span><span class="n">display</span><span class="p">(</span><span class="s1">&#39;PLAN_TABLE&#39;</span><span class="p">,</span><span class="k">NULL</span><span class="p">,</span><span class="s1">&#39;outline&#39;</span><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">PLAN_TABLE_OUTPUT</span>
+</span><span class='line'><span class="c1">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</span>
+</span><span class='line'><span class="n">Plan</span> <span class="n">hash</span> <span class="n">value</span><span class="p">:</span> <span class="mi">261998084</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">----------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span> <span class="n">Id</span>  <span class="o">|</span> <span class="k">Operation</span>     <span class="o">|</span> <span class="n">Name</span> <span class="o">|</span> <span class="k">Rows</span>  <span class="o">|</span> <span class="n">Bytes</span> <span class="o">|</span> <span class="n">Cost</span> <span class="p">(</span><span class="o">%</span><span class="n">CPU</span><span class="p">)</span><span class="o">|</span> <span class="n">Time</span>       <span class="o">|</span>
+</span><span class='line'><span class="c1">----------------------------------------------------------------------------</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">0</span> <span class="o">|</span> <span class="k">SELECT</span> <span class="k">STATEMENT</span>    <span class="o">|</span>     <span class="o">|</span>  <span class="mi">1</span> <span class="o">|</span> <span class="mi">61</span> <span class="o">|</span>  <span class="mi">7</span>  <span class="p">(</span><span class="mi">15</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|*</span>  <span class="mi">1</span> <span class="o">|</span>  <span class="n">HASH</span> <span class="k">JOIN</span>        <span class="o">|</span>       <span class="o">|</span>  <span class="mi">1</span> <span class="o">|</span> <span class="mi">61</span> <span class="o">|</span>  <span class="mi">7</span>  <span class="p">(</span><span class="mi">15</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|*</span>  <span class="mi">2</span> <span class="o">|</span>   <span class="n">HASH</span> <span class="k">JOIN</span>       <span class="o">|</span>       <span class="o">|</span>  <span class="mi">1</span> <span class="o">|</span> <span class="mi">52</span> <span class="o">|</span>  <span class="mi">5</span>  <span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">3</span> <span class="o">|</span>    <span class="k">TABLE</span> <span class="k">ACCESS</span> <span class="k">FULL</span><span class="o">|</span> <span class="n">T1</span>   <span class="o">|</span>   <span class="mi">1</span> <span class="o">|</span> <span class="mi">26</span> <span class="o">|</span>  <span class="mi">2</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">4</span> <span class="o">|</span>    <span class="k">TABLE</span> <span class="k">ACCESS</span> <span class="k">FULL</span><span class="o">|</span> <span class="n">T2</span>   <span class="o">|</span>   <span class="mi">1</span> <span class="o">|</span> <span class="mi">26</span> <span class="o">|</span>  <span class="mi">2</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="o">|</span>   <span class="mi">5</span> <span class="o">|</span>   <span class="k">TABLE</span> <span class="k">ACCESS</span> <span class="k">FULL</span> <span class="o">|</span> <span class="n">T3</span>   <span class="o">|</span>   <span class="mi">3</span> <span class="o">|</span> <span class="mi">27</span> <span class="o">|</span>  <span class="mi">2</span>   <span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">|</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">|</span>
+</span><span class='line'><span class="c1">----------------------------------------------------------------------------</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Outline</span> <span class="k">Data</span>
+</span><span class='line'><span class="c1">-------------</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/*+</span>
+</span><span class='line'><span class="cm">      BEGIN_OUTLINE_DATA</span>
+</span><span class='line'><span class="cm">      USE_HASH(@&quot;SEL$1&quot; &quot;T3&quot;@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      USE_HASH(@&quot;SEL$1&quot; &quot;T2&quot;@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      LEADING(@&quot;SEL$1&quot; &quot;T1&quot;@&quot;SEL$1&quot; &quot;T2&quot;@&quot;SEL$1&quot; &quot;T3&quot;@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      FULL(@&quot;SEL$1&quot; &quot;T3&quot;@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      FULL(@&quot;SEL$1&quot; &quot;T2&quot;@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      FULL(@&quot;SEL$1&quot; &quot;T1&quot;@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      OUTLINE_LEAF(@&quot;SEL$1&quot;)</span>
+</span><span class='line'><span class="cm">      ALL_ROWS</span>
+</span><span class='line'><span class="cm">      DB_VERSION(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      OPTIMIZER_FEATURES_ENABLE(&#39;11.2.0.2&#39;)</span>
+</span><span class='line'><span class="cm">      IGNORE_OPTIM_EMBEDDED_HINTS</span>
+</span><span class='line'><span class="cm">      END_OUTLINE_DATA</span>
+</span><span class='line'><span class="cm">  */</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>而我们可以使用HINT来指示优化器使用哪个表为buid table，进而生成right build tree。</p>
+
+<blockquote><p>To specify how the rowsource is used you need a second hint: <strong>no_swap_join_inputs</strong>(rowsource_alias) if you want Oracle to use the rowsource as the <strong>probe table</strong>, or <strong>swap_join_inputs</strong>(rowsource_alias) if you want Oracle to use it as the <strong>build table</strong>;</p></blockquote>
+
+<p>当使用right deep tree时，Hash Join可以流式的迭代出数据，这也是其能够生成right deep tree的原因。</p>
+
+<h4>Nested Loops Join</h4>
+
+<p>Nested Loops Join只能生成left deep join tree（不包括view中内容的情况下）。因为left deep join tree可以处理其所有的情况。</p>
+
+<h3>参考资料</h3>
+
+<p><a href="http://www.oaktable.net/content/right-deep-left-deep-and-bushy-joins">right-deep-left-deep-and-bushy-joins</a>
+<a href="https://docs.oracle.com/database/121/TGSQL/tgsql_join.htm#GUID-91E61BDC-E5F2-49FA-99AE-DD88A2FBB4FB">Oracle Joins</a>
+<a href="https://jonathanlewis.wordpress.com/2013/09/07/hash-joins/">Hash Joins</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[The Use of Select for Update]]></title>
